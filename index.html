@@ -6,7 +6,7 @@
 <title>SYS_SECURE // CANAL DE LOCALIZAÇÕES GTA</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
-  /* ===== ESTILOS (mesmos da versão anterior, mantidos) ===== */
+  /* ===== ESTILOS (com melhorias para o novo layout) ===== */
   :root {
     --bg: #090a0f;
     --panel: #0e1117;
@@ -124,6 +124,8 @@
   .btn-outline:hover { background: var(--panel-hover); border-color: var(--accent); color: var(--accent); }
   .btn-full { width: 100%; justify-content: center; }
   .btn:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-add { background: var(--accent); color: #000; border-color: var(--accent); }
+  .btn-add:hover { background: #00cc52; border-color: #00cc52; }
   .err { color: var(--danger); font-size: 12px; margin-bottom: 15px; background: rgba(255,85,85,0.05); padding: 8px; border: 1px solid rgba(255,85,85,0.2); }
   .modebtn { flex: 1; padding: 8px; font-size: 12px; border: 1px solid var(--border); background: #000; color: var(--muted); cursor: pointer; font-family: var(--font-mono); transition: 0.1s; }
   .modebtn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
@@ -167,31 +169,42 @@
   .iconbtn { width: 32px; height: 32px; border: 1px solid var(--border); background: #000; cursor: pointer; color: var(--text); display: inline-flex; align-items: center; justify-content: center; font-family: var(--font-mono); transition: 0.1s; }
   .iconbtn:hover { border-color: var(--accent); color: var(--accent); background: var(--panel-hover); }
   .iconbtn.danger:hover { border-color: var(--danger); color: var(--danger); background: rgba(255,85,85,0.1); }
-  .muted { color: var(--muted); font-size: 12px; }
-  .hint { font-size: 10px; color: var(--muted); margin-top: 10px; line-height: 1.4; }
-  .link { color: var(--danger); font-size: 11px; background: none; border: none; cursor: pointer; text-decoration: underline; font-family: var(--font-mono); }
-  .loader-overlay { border: 1px solid var(--border); background: #000; padding: 30px 20px; text-align: center; margin-top: 10px; }
-  .loader-overlay .spinner { display: inline-block; width: 30px; height: 30px; border: 2px solid var(--border); border-top: 2px solid var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 15px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loader-overlay .progress-bar { width: 100%; height: 4px; background: var(--border); margin: 15px 0; overflow: hidden; }
-  .loader-overlay .progress-bar .fill { height: 100%; width: 0%; background: var(--accent); transition: width 0.2s; }
-  .loader-overlay .timer { color: var(--accent); font-size: 14px; letter-spacing: 2px; }
-  .clock-display { font-size: 16px; color: var(--accent); background: #000; padding: 6px 14px; border: 1px solid var(--border); display: inline-block; margin-bottom: 15px; letter-spacing: 2px; }
-  .countdown { font-size: 14px; color: #ffaa00; background: #000; padding: 8px 14px; border: 1px solid #ffaa00; display: inline-block; margin: 10px 0; letter-spacing: 1px; }
-  .countdown.positive { color: var(--accent); border-color: var(--accent); }
-  .countdown.negative { color: var(--danger); border-color: var(--danger); }
-  .map-container { border: 1px solid var(--border); background: #000; display: flex; flex-direction: column; margin-top: 20px; }
-  .map-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #07090e; border-bottom: 1px solid var(--border); }
-  .map-title { color: var(--muted); font-size: 11px; }
-  .btn-expand { background: #000; border: 1px solid var(--border); color: var(--text); padding: 4px 10px; cursor: pointer; font-size: 11px; font-family: var(--font-mono); transition: 0.1s; }
-  .btn-expand:hover { border-color: var(--accent); color: var(--accent); }
-  .map-container .map-frame { width: 100%; height: 400px; border: none; background: #000; }
-  .map-container.fullscreen { position: fixed; top:0;left:0;width:100vw;height:100vh;z-index:10000;border:none; }
-  .map-container.fullscreen .map-frame { height: calc(100vh - 35px); }
-  .search-box { margin-bottom: 20px; display: flex; gap: 10px; align-items: center; }
-  .search-box input { flex: 1; background: #000; border: 1px solid var(--border); padding: 10px 12px; font-size: 14px; color: var(--accent); font-family: var(--font-mono); transition: 0.15s; }
-  .search-box input:focus { outline: none; border-color: var(--accent); box-shadow: inset 0 0 5px var(--accent-dim); }
+  .iconbtn.expand-btn:hover { border-color: #3b82f6; color: #3b82f6; background: rgba(59,130,246,0.1); }
+  .loc-expanded-details {
+    padding: 15px 10px;
+    margin: 10px 0 5px 0;
+    background: #000;
+    border: 1px solid var(--border-bright);
+    width: 100%;
+    border-radius: 0;
+  }
+  .loc-expanded-details .detail-row { display: flex; gap: 10px; margin-bottom: 6px; font-size: 12px; }
+  .loc-expanded-details .detail-row .label { color: var(--muted); min-width: 80px; }
+  .loc-expanded-details .detail-row .value { color: var(--text); word-break: break-word; }
+  .loc-expanded-details .map-container { margin-top: 10px; border: 1px solid var(--border); }
+  .loc-expanded-details .map-container .map-frame { height: 250px; }
+
+  .search-box { margin-bottom: 15px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .search-box input { flex: 1; background: #000; border: 1px solid var(--border); padding: 12px 15px; font-size: 15px; color: var(--accent); font-family: var(--font-mono); transition: 0.15s; min-width: 150px; }
+  .search-box input:focus { outline: none; border-color: var(--accent); box-shadow: inset 0 0 5px var(--accent-dim), 0 0 15px var(--accent-dim); }
   .search-box .search-count { font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .search-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+  .add-form-panel {
+    border: 1px solid var(--border);
+    background: var(--panel);
+    margin-bottom: 20px;
+    padding: 15px 20px;
+    display: none;
+    animation: slideDown 0.3s ease-out;
+  }
+  .add-form-panel.show { display: block; }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .add-form-panel .field { margin-bottom: 10px; }
+
   @media (max-width:700px){ .top-bar { flex-direction: column; align-items: stretch; padding: 15px; } .nav-tabs { justify-content: center; } .grid2, .grid3 { grid-template-columns: 1fr; } .quick { grid-template-columns: 1fr; } .dash-grid { grid-template-columns: 1fr; } .search-box { flex-wrap: wrap; } }
 </style>
 </head>
@@ -441,6 +454,8 @@ let state = {
   locForm: { name:'', x:'', y:'', region:'', area:'', description:'', time:'', error:'' },
   editingId: null,
   editDraft: {},
+  expandedId: null, // ID do local expandido
+  showAddForm: false,
   loading: false,
   loadingType: '',
   progress: 0,
@@ -570,7 +585,6 @@ async function loadRemoteLocations() {
     const rawText = await response.text();
     let xmlText = rawText;
 
-    // Tentar desencriptar
     const decrypted = decryptXML(rawText);
     if (decrypted !== null && decrypted.trim().startsWith('<?xml')) {
       xmlText = decrypted;
@@ -613,18 +627,16 @@ async function loadRemoteLocations() {
     addLog(`Base remota carregada: ${remote.length} locais`, 'info');
     addLog(`Total de locais: ${state.locations.length}`, 'info');
   } catch(err) {
-    // Se falhar (CORS, ficheiro inexistente, etc.), usar dados de exemplo
     addLog(`Erro ao carregar XML: ${err.message}`, 'err');
     if (state.locations.length === 0) {
       addLog('A utilizar dados de exemplo (fallback)', 'warn');
       state.locations = DEFAULT_LOCATIONS.map(l => ({ ...l, _remote: false }));
       store.setLocations(state.locations.filter(l => !l._remote));
     } else {
-      // Manter apenas os manuais, descartar remotos (não carregados)
       state.locations = state.locations.filter(l => !l._remote);
     }
   }
-  render(); // Forçar renderização após carregamento
+  render();
 }
 
 // ==========================================
@@ -667,6 +679,29 @@ function exportLocationsXML() {
 }
 function escXML(str) {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ==========================================
+//  TOGGLE EXPAND
+// ==========================================
+function toggleExpand(id) {
+  if (state.expandedId === id) {
+    setState({ expandedId: null });
+  } else {
+    setState({ expandedId: id });
+    // Scroll para o local expandido
+    setTimeout(() => {
+      const el = document.querySelector(`[data-expand-target="${id}"]`);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+  }
+}
+
+// ==========================================
+//  TOGGLE ADD FORM
+// ==========================================
+function toggleAddForm() {
+  setState({ showAddForm: !state.showAddForm });
 }
 
 // ==========================================
@@ -872,7 +907,7 @@ function renderDecrypt(){
 }
 
 // ==========================================
-//  LOCATIONS (com pesquisa e exportação)
+//  LOCATIONS (com foco na pesquisa, expandir e mapa)
 // ==========================================
 function renderLocations(){
   const f = state.locForm;
@@ -887,81 +922,121 @@ function renderLocations(){
     return searchFields.includes(q);
   });
 
+  // Formulário de adição (colapsável)
+  const addFormHtml = `
+    <div class="add-form-panel ${state.showAddForm ? 'show' : ''}">
+      <div class="grid3" style="grid-template-columns: 1fr 100px 100px 200px;">
+        <label class="field"><span>IDENTIFICAÇÃO</span><input id="loc-name" value="${f.name}" placeholder="EX: SECTOR_A"></label>
+        <label class="field"><span>X</span><input id="loc-x" type="number" step="0.1" min="-${RANGE}" max="${RANGE}" value="${f.x}"></label>
+        <label class="field"><span>Y</span><input id="loc-y" type="number" step="0.1" min="-${RANGE}" max="${RANGE}" value="${f.y}"></label>
+        <label class="field"><span>DATA/HORA (BRT)</span><input id="loc-time" type="datetime-local" value="${f.time}"></label>
+      </div>
+      <div class="grid2">
+        <label class="field"><span>REGIÃO (local)</span><input id="loc-region" value="${f.region}" placeholder="Ex: Centro, Zona Norte"></label>
+        <label class="field"><span>REGIÃO (abrangente)</span><input id="loc-area" value="${f.area}" placeholder="Ex: Cidade, Estado"></label>
+      </div>
+      <label class="field"><span>DESCRIÇÃO</span><textarea id="loc-description" rows="2" placeholder="Descrição do local">${f.description}</textarea></label>
+      ${f.error?`<div class="err">&gt; ERRO: ${f.error}</div>`:''}
+      <div class="row">
+        <button id="loc-add" class="btn btn-primary">&gt; ADICIONAR_REGISTO</button>
+        <button id="loc-cancel-add" class="btn btn-outline">CANCELAR</button>
+      </div>
+    </div>
+  `;
+
+  // Lista de locais
+  let listHtml = filtered.map(l => {
+    const isEditing = state.editingId === l.id;
+    const isExpanded = state.expandedId === l.id;
+
+    let mainRow = '';
+    if (isEditing) {
+      mainRow = `
+        <div class="list-item" style="display:grid;grid-template-columns:1fr 90px 90px 200px auto;gap:10px;align-items:center;padding:10px 0;">
+          <input class="edit-name" data-id="${l.id}" value="${state.editDraft.name}">
+          <input class="edit-x" data-id="${l.id}" type="number" step="0.1" value="${state.editDraft.x}">
+          <input class="edit-y" data-id="${l.id}" type="number" step="0.1" value="${state.editDraft.y}">
+          <input class="edit-time" data-id="${l.id}" type="datetime-local" value="${state.editDraft.time||''}">
+          <div class="row">
+            <button class="iconbtn edit-save" data-id="${l.id}" style="color:var(--accent);">[✓]</button>
+            <button class="iconbtn edit-cancel">[X]</button>
+          </div>
+        </div>
+        <div class="grid2" style="padding:0 0 10px 0;">
+          <input class="edit-region" data-id="${l.id}" value="${state.editDraft.region||''}" placeholder="Região local">
+          <input class="edit-area" data-id="${l.id}" value="${state.editDraft.area||''}" placeholder="Região abrangente">
+          <textarea class="edit-description" data-id="${l.id}" rows="2" placeholder="Descrição">${state.editDraft.description||''}</textarea>
+        </div>
+      `;
+    } else {
+      mainRow = `
+        <div class="list-item">
+          <div>
+            <div class="loc-name">${l.name}</div>
+            <div class="loc-coords">X: ${l.x} | Y: ${l.y}</div>
+            ${l.region ? `<div class="loc-detail">📍 ${l.region}${l.area ? ' · '+l.area : ''}</div>` : ''}
+            ${l.description ? `<div class="loc-detail">📝 ${l.description}</div>` : ''}
+            ${l.time ? `<div class="loc-time">⏱ ${formatBrasiliaFromISO(l.time)}</div>` : ''}
+            ${l.tags ? `<div class="loc-tags">🏷️ ${l.tags}</div>` : ''}
+            ${l._remote ? '<span style="color:var(--muted);font-size:9px;">[REMOTO]</span>' : ''}
+          </div>
+          <div class="row">
+            <button class="iconbtn expand-btn loc-expand" data-id="${l.id}" title="Expandir detalhes">[⛶]</button>
+            <button class="iconbtn loc-edit" data-id="${l.id}" title="Editar">[✎]</button>
+            ${!l._remote ? `<button class="iconbtn danger loc-del" data-id="${l.id}" title="Remover">[🗑]</button>` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    let expandRow = '';
+    if (isExpanded && !isEditing) {
+      expandRow = `
+        <div class="loc-expanded-details" data-expand-target="${l.id}">
+          <div class="detail-row"><span class="label">IDENTIFICAÇÃO</span><span class="value">${l.name}</span></div>
+          <div class="detail-row"><span class="label">COORDENADAS</span><span class="value">X: ${l.x} | Y: ${l.y}</span></div>
+          ${l.region ? `<div class="detail-row"><span class="label">REGIÃO LOCAL</span><span class="value">${l.region}</span></div>` : ''}
+          ${l.area ? `<div class="detail-row"><span class="label">REGIÃO ABRANGENTE</span><span class="value">${l.area}</span></div>` : ''}
+          ${l.description ? `<div class="detail-row"><span class="label">DESCRIÇÃO</span><span class="value">${l.description}</span></div>` : ''}
+          ${l.tags ? `<div class="detail-row"><span class="label">TAGS</span><span class="value">${l.tags}</span></div>` : ''}
+          ${l.time ? `<div class="detail-row"><span class="label">ÚLTIMA ATUALIZAÇÃO</span><span class="value">${formatBrasiliaFromISO(l.time)}</span></div>` : ''}
+          <div class="detail-row"><span class="label">ORIGEM</span><span class="value">${l._remote ? 'REMOTO' : 'MANUAL'}</span></div>
+          <div class="map-container" style="margin-top:10px;">
+            <div class="map-header">
+              <span class="map-title">&gt; LOCALIZAÇÃO NO MAPA</span>
+              <button class="btn-expand" onclick="window.open('${forgeUrl(l.x,l.y,3)}', '_blank')">[ABRIR EXTERNO]</button>
+            </div>
+            <iframe class="map-frame" src="${forgeUrl(l.x,l.y,3)}" allowfullscreen style="height:250px;"></iframe>
+          </div>
+          <button class="btn btn-outline" style="margin-top:10px;" onclick="setState({expandedId:null})">FECHAR DETALHES</button>
+        </div>
+      `;
+    }
+
+    return `<div>${mainRow}${expandRow}</div>`;
+  }).join('');
+
   return `
     ${header('BASE DE DADOS DE LOCAIS','Gestão de coordenadas e informação dos locais')}
     <div class="panel">
-      <div class="panel-head"><h2>[PESQUISA]</h2></div>
+      <div class="panel-head"><h2>[PESQUISA E OPERAÇÕES]</h2></div>
       <div class="panel-body">
         <div class="search-box">
           <input id="searchInput" type="text" value="${query}" placeholder="Pesquisar por nome, região, coordenadas...">
           <span class="search-count">${filtered.length} / ${state.locations.length}</span>
+          <div class="search-actions">
+            <button id="toggleAddBtn" class="btn btn-add">➕ ADICIONAR LOCAL</button>
+            <button id="exportXmlBtn" class="btn btn-outline">⬇ XML</button>
+            <button id="refreshXmlBtn" class="btn btn-outline">⟳ XML</button>
+          </div>
         </div>
-        <button id="exportXmlBtn" class="btn btn-primary">⬇ EXPORTAR XML (ENCRIPTADO)</button>
-        <button id="refreshXmlBtn" class="btn btn-outline" style="margin-left:10px;">⟳ RECARREGAR XML</button>
-      </div>
-    </div>
-    <div class="panel">
-      <div class="panel-head"><h2>[REGISTAR_NOVO_LOCAL]</h2></div>
-      <div class="panel-body">
-        <div class="grid3" style="grid-template-columns: 1fr 100px 100px 200px;">
-          <label class="field"><span>IDENTIFICAÇÃO</span><input id="loc-name" value="${f.name}" placeholder="EX: SECTOR_A"></label>
-          <label class="field"><span>X</span><input id="loc-x" type="number" step="0.1" min="-${RANGE}" max="${RANGE}" value="${f.x}"></label>
-          <label class="field"><span>Y</span><input id="loc-y" type="number" step="0.1" min="-${RANGE}" max="${RANGE}" value="${f.y}"></label>
-          <label class="field"><span>DATA/HORA (BRT)</span><input id="loc-time" type="datetime-local" value="${f.time}"></label>
-        </div>
-        <div class="grid2">
-          <label class="field"><span>REGIÃO (local)</span><input id="loc-region" value="${f.region}" placeholder="Ex: Centro, Zona Norte"></label>
-          <label class="field"><span>REGIÃO (abrangente)</span><input id="loc-area" value="${f.area}" placeholder="Ex: Cidade, Estado"></label>
-        </div>
-        <label class="field"><span>DESCRIÇÃO</span><textarea id="loc-description" rows="2" placeholder="Descrição do local">${f.description}</textarea></label>
-        ${f.error?`<div class="err">&gt; ERRO: ${f.error}</div>`:''}
-        <button id="loc-add" class="btn btn-primary">&gt; ADICIONAR_REGISTO</button>
+        ${addFormHtml}
       </div>
     </div>
     <div class="panel">
       <div class="panel-head"><h2>[LISTA_DE_LOCAIS (${filtered.length})]</h2></div>
       <div class="panel-body" style="padding:0 15px;">
-        ${filtered.length===0 ? `<p class="muted" style="padding:15px 0;">Nenhum local encontrado.</p>` :
-          filtered.map(l => {
-            const isEditing = state.editingId === l.id;
-            if (isEditing) {
-              return `
-                <div class="list-item" style="display:grid;grid-template-columns:1fr 90px 90px 200px auto;gap:10px;align-items:center;padding:10px 0;">
-                  <input class="edit-name" data-id="${l.id}" value="${state.editDraft.name}">
-                  <input class="edit-x" data-id="${l.id}" type="number" step="0.1" value="${state.editDraft.x}">
-                  <input class="edit-y" data-id="${l.id}" type="number" step="0.1" value="${state.editDraft.y}">
-                  <input class="edit-time" data-id="${l.id}" type="datetime-local" value="${state.editDraft.time||''}">
-                  <div class="row">
-                    <button class="iconbtn edit-save" data-id="${l.id}" style="color:var(--accent);">[✓]</button>
-                    <button class="iconbtn edit-cancel">[X]</button>
-                  </div>
-                </div>
-                <div class="grid2" style="padding:0 0 10px 0;">
-                  <input class="edit-region" data-id="${l.id}" value="${state.editDraft.region||''}" placeholder="Região local">
-                  <input class="edit-area" data-id="${l.id}" value="${state.editDraft.area||''}" placeholder="Região abrangente">
-                  <textarea class="edit-description" data-id="${l.id}" rows="2" placeholder="Descrição">${state.editDraft.description||''}</textarea>
-                </div>
-              `;
-            }
-            return `
-              <div class="list-item">
-                <div>
-                  <div class="loc-name">${l.name}</div>
-                  <div class="loc-coords">X: ${l.x} | Y: ${l.y}</div>
-                  ${l.region ? `<div class="loc-detail">📍 ${l.region}${l.area ? ' · '+l.area : ''}</div>` : ''}
-                  ${l.description ? `<div class="loc-detail">📝 ${l.description}</div>` : ''}
-                  ${l.time ? `<div class="loc-time">⏱ ${formatBrasiliaFromISO(l.time)}</div>` : ''}
-                  ${l.tags ? `<div class="loc-tags">🏷️ ${l.tags}</div>` : ''}
-                  ${l._remote ? '<span style="color:var(--muted);font-size:9px;">[REMOTO]</span>' : ''}
-                </div>
-                <div class="row">
-                  <button class="iconbtn loc-edit" data-id="${l.id}">[✎]</button>
-                  ${!l._remote ? `<button class="iconbtn danger loc-del" data-id="${l.id}">[🗑]</button>` : ''}
-                </div>
-              </div>
-            `;
-          }).join('')
-        }
+        ${filtered.length===0 ? `<p class="muted" style="padding:15px 0;">Nenhum local encontrado.</p>` : listHtml}
       </div>
     </div>
   `;
@@ -1011,7 +1086,6 @@ function render(){
   updateFavicon(state.loading ? 'processing' : 'online');
   updateClock();
 
-  // Restaurar foco no input de pesquisa
   if (state.tab === 'locations' && previousActiveElement && previousActiveElement.id === 'searchInput') {
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
@@ -1084,6 +1158,7 @@ function bindEvents(){
     addLog('Logs limpos', 'warn');
   });
 
+  // Pesquisa
   const searchInput = document.getElementById('searchInput');
   if (searchInput) {
     searchInput.addEventListener('input', e => {
@@ -1092,14 +1167,29 @@ function bindEvents(){
     });
   }
 
+  // Toggle add form
+  document.getElementById('toggleAddBtn')?.addEventListener('click', toggleAddForm);
+
+  // Cancelar add form
+  document.getElementById('loc-cancel-add')?.addEventListener('click', () => {
+    setState({ showAddForm: false });
+  });
+
+  // Exportar
   document.getElementById('exportXmlBtn')?.addEventListener('click', () => {
     playClick();
     exportLocationsXML();
   });
 
+  // Recarregar XML
   document.getElementById('refreshXmlBtn')?.addEventListener('click', () => {
     playClick();
     loadRemoteLocations();
+  });
+
+  // Expandir locais
+  document.querySelectorAll('.loc-expand').forEach(b => {
+    b.onclick = () => { toggleExpand(b.dataset.id); };
   });
 
   if (state.tab==='encrypt'){
@@ -1135,6 +1225,7 @@ function bindEvents(){
     document.getElementById('dec-run')?.addEventListener('click', onDecrypt);
   }
   if (state.tab==='locations'){
+    // Inputs do formulário de adição
     document.getElementById('loc-name')?.addEventListener('input', e => state.locForm.name = e.target.value);
     document.getElementById('loc-x')?.addEventListener('input', e => state.locForm.x = e.target.value);
     document.getElementById('loc-y')?.addEventListener('input', e => state.locForm.y = e.target.value);
@@ -1144,6 +1235,7 @@ function bindEvents(){
     document.getElementById('loc-description')?.addEventListener('input', e => state.locForm.description = e.target.value);
     document.getElementById('loc-add')?.addEventListener('click', onAddLocation);
 
+    // Edição
     document.querySelectorAll('.loc-edit').forEach(b => b.onclick = () => {
       const l = state.locations.find(x=>x.id===b.dataset.id);
       if (!l) return;
@@ -1389,7 +1481,7 @@ function onAddLocation(){
   const manual = next.filter(l => !l._remote);
   store.setLocations(manual);
   state.locations = next;
-  setState({locations: next, locForm:{name:'',x:'',y:'',time:'',region:'',area:'',description:'',error:''}});
+  setState({locations: next, locForm:{name:'',x:'',y:'',time:'',region:'',area:'',description:'',error:''}, showAddForm: false});
   addLog(`Local adicionado: ${f.name} (${xi}, ${yi})${timeISO ? ' às '+formatBrasiliaFromISO(timeISO) : ''}`, 'info');
 }
 
@@ -1425,12 +1517,9 @@ document.getElementById('soundToggle').addEventListener('click', function() {
 // ==========================================
 async function init() {
   addLog('Sistema inicializado', 'info');
-  // Carregar locais manuais
   const manualLocs = store.getLocations();
   state.locations = manualLocs;
-  // Carregar remotos (com fallback)
   await loadRemoteLocations();
-  // Renderizar (loadRemoteLocations já chama render, mas garantimos)
   render();
 }
 
