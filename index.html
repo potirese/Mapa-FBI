@@ -186,7 +186,7 @@
   .map-container.fullscreen { position: fixed; top:0;left:0;width:100vw;height:100vh;z-index:10000;border:none; }
   .map-container.fullscreen .map-frame { height: calc(100vh - 35px); }
 
-  /* ===== NOVOS ESTILOS PARA A PÁGINA LOCAIS (INTELIGÊNCIA) ===== */
+  /* ===== ESTILOS PARA PÁGINA LOCAIS (INTELIGÊNCIA) ===== */
   .intel-header {
     display: flex;
     justify-content: space-between;
@@ -216,7 +216,6 @@
   .intel-stats span { display: flex; align-items: center; gap: 5px; }
   .intel-stats .num { color: var(--accent); font-size: 16px; font-weight: bold; }
 
-  /* Barra de pesquisa estilo CIA */
   .search-intel {
     background: #000;
     border: 1px solid var(--border);
@@ -261,14 +260,12 @@
     white-space: nowrap;
     padding: 0 5px;
   }
-
   .search-actions {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
   }
 
-  /* Cards de locais (dossiês) */
   .location-card {
     background: #000;
     border: 1px solid var(--border);
@@ -365,7 +362,6 @@
   .location-card .card-body .details-grid .item .value.accent {
     color: var(--accent);
   }
-  /* Mapa grande e centralizado */
   .location-card .card-body .map-container {
     margin: 10px 0 0 0;
     border: 1px solid var(--border);
@@ -380,27 +376,13 @@
     font-size: 10px;
   }
 
-  .location-card .card-body .map-container.fullscreen .map-frame {
-    height: calc(100vh - 35px);
-  }
-
   @media (max-width: 700px) {
-    .location-card .card-body .details-grid {
-      grid-template-columns: 1fr;
-    }
-    .search-intel {
-      flex-wrap: wrap;
-    }
-    .search-intel input {
-      width: 100%;
-    }
-    .intel-header {
-      flex-direction: column;
-      align-items: flex-start;
-    }
+    .location-card .card-body .details-grid { grid-template-columns: 1fr; }
+    .search-intel { flex-wrap: wrap; }
+    .search-intel input { width: 100%; }
+    .intel-header { flex-direction: column; align-items: flex-start; }
   }
 
-  /* Formulário de adição (estilo colapsável) */
   .add-form-panel {
     border: 1px solid var(--border);
     background: #000;
@@ -450,7 +432,6 @@
 // ==========================================
 const CONFIG = {
   LOCATIONS_XML_URL: 'locations.xml',
-  ENCRYPTION_KEY: 'SYS_SECURE_XML',
 };
 
 // ==========================================
@@ -491,29 +472,6 @@ const DEFAULT_LOCATIONS = [
     tags: 'SUL,LOGISTICA'
   }
 ];
-
-// ==========================================
-//  ENCRIPTAÇÃO LEVE (XOR + Base64)
-// ==========================================
-function xorEncryptDecrypt(str, key) {
-  let result = '';
-  for (let i = 0; i < str.length; i++) {
-    result += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length));
-  }
-  return result;
-}
-function encryptXML(xmlStr) {
-  const xorred = xorEncryptDecrypt(xmlStr, CONFIG.ENCRYPTION_KEY);
-  return btoa(xorred);
-}
-function decryptXML(encryptedB64) {
-  try {
-    const xorred = atob(encryptedB64);
-    return xorEncryptDecrypt(xorred, CONFIG.ENCRYPTION_KEY);
-  } catch (e) {
-    return null;
-  }
-}
 
 // ==========================================
 //  AUDIO
@@ -784,23 +742,14 @@ function renderClock() {
 }
 
 // ==========================================
-//  CARREGAR XML REMOTO (com fallback)
+//  CARREGAR XML REMOTO (sem encriptação)
 // ==========================================
 async function loadRemoteLocations() {
   try {
-    addLog('A carregar base de dados remota (XML encriptado)...', 'info');
+    addLog('A carregar base de dados remota (XML)...', 'info');
     const response = await fetch(CONFIG.LOCATIONS_XML_URL);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const rawText = await response.text();
-    let xmlText = rawText;
-
-    const decrypted = decryptXML(rawText);
-    if (decrypted !== null && decrypted.trim().startsWith('<?xml')) {
-      xmlText = decrypted;
-      addLog('Ficheiro encriptado detectado e desencriptado.', 'info');
-    } else {
-      addLog('Ficheiro em texto simples (não encriptado).', 'warn');
-    }
+    const xmlText = await response.text();
 
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
@@ -849,7 +798,7 @@ async function loadRemoteLocations() {
 }
 
 // ==========================================
-//  EXPORTAR XML ENCRIPTADO
+//  EXPORTAR XML (sem encriptação)
 // ==========================================
 function exportLocationsXML() {
   const locs = state.locations;
@@ -874,8 +823,7 @@ function exportLocationsXML() {
   });
   xml += '</locations>';
 
-  const encrypted = encryptXML(xml);
-  const blob = new Blob([encrypted], { type: 'application/xml;charset=utf-8' });
+  const blob = new Blob([xml], { type: 'application/xml;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -884,7 +832,7 @@ function exportLocationsXML() {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  addLog(`Exportados ${locs.length} locais para XML encriptado`, 'info');
+  addLog(`Exportados ${locs.length} locais para XML`, 'info');
 }
 function escXML(str) {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -1115,7 +1063,7 @@ function renderDecrypt(){
 }
 
 // ==========================================
-//  LOCATIONS (versão "intelligence")
+//  LOCATIONS (intelligence)
 // ==========================================
 function renderLocations(){
   const f = state.locForm;
@@ -1130,7 +1078,6 @@ function renderLocations(){
     return searchFields.includes(q);
   });
 
-  // Formulário de adição (colapsável)
   const addFormHtml = `
     <div class="add-form-panel ${state.showAddForm ? 'show' : ''}">
       <div class="grid3" style="grid-template-columns: 1fr 100px 100px 200px;">
@@ -1152,12 +1099,10 @@ function renderLocations(){
     </div>
   `;
 
-  // Cards de locais (dossiês)
   let cardsHtml = filtered.map(l => {
     const isEditing = state.editingId === l.id;
     const isExpanded = state.expandedId === l.id;
 
-    // Se estiver a editar, usar o layout antigo de edição (simplificado)
     if (isEditing) {
       return `
         <div class="location-card" style="padding:15px; border:1px solid var(--accent);">
@@ -1180,7 +1125,6 @@ function renderLocations(){
       `;
     }
 
-    // Card normal
     const isRemote = l._remote ? true : false;
     return `
       <div class="location-card" data-card-id="${l.id}">
@@ -1370,7 +1314,6 @@ function bindEvents(){
     addLog('Logs limpos', 'warn');
   });
 
-  // Pesquisa
   const searchInput = document.getElementById('searchInput');
   if (searchInput) {
     searchInput.addEventListener('input', e => {
@@ -1379,21 +1322,16 @@ function bindEvents(){
     });
   }
 
-  // Toggle add form
   document.getElementById('toggleAddBtn')?.addEventListener('click', toggleAddForm);
-
-  // Cancelar add form
   document.getElementById('loc-cancel-add')?.addEventListener('click', () => {
     setState({ showAddForm: false });
   });
 
-  // Exportar
   document.getElementById('exportXmlBtn')?.addEventListener('click', () => {
     playClick();
     exportLocationsXML();
   });
 
-  // Recarregar XML
   document.getElementById('refreshXmlBtn')?.addEventListener('click', () => {
     playClick();
     loadRemoteLocations();
@@ -1432,7 +1370,6 @@ function bindEvents(){
     document.getElementById('dec-run')?.addEventListener('click', onDecrypt);
   }
   if (state.tab==='locations'){
-    // Inputs do formulário de adição
     document.getElementById('loc-name')?.addEventListener('input', e => state.locForm.name = e.target.value);
     document.getElementById('loc-x')?.addEventListener('input', e => state.locForm.x = e.target.value);
     document.getElementById('loc-y')?.addEventListener('input', e => state.locForm.y = e.target.value);
@@ -1442,7 +1379,6 @@ function bindEvents(){
     document.getElementById('loc-description')?.addEventListener('input', e => state.locForm.description = e.target.value);
     document.getElementById('loc-add')?.addEventListener('click', onAddLocation);
 
-    // Edição (já tratada via onclick nos botões, mas precisamos dos eventos)
     document.querySelectorAll('.loc-edit').forEach(b => b.onclick = (e) => {
       e.stopPropagation();
       const l = state.locations.find(x=>x.id===b.dataset.id);
@@ -1507,7 +1443,6 @@ function bindEvents(){
       addLog(`Local actualizado: ${state.editDraft.name}`, 'info');
     });
     document.querySelector('.edit-cancel')?.addEventListener('click', () => setState({editingId:null}));
-    // Inputs de edição (delegar)
     document.querySelectorAll('.edit-name').forEach(el => el.oninput = e => state.editDraft.name = e.target.value);
     document.querySelectorAll('.edit-x').forEach(el => el.oninput = e => state.editDraft.x = e.target.value);
     document.querySelectorAll('.edit-y').forEach(el => el.oninput = e => state.editDraft.y = e.target.value);
