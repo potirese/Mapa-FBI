@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SYS_SECURE // CANAL DE LOCALIZAÇÕES GTA</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  /* ===== ESTILOS (mesmos da versão anterior, mantidos) ===== */
+  :root {
+    --bg: #090a0f;
+    --panel: #0e1117;
+    --panel-hover: #161b22;
+    --border: #21262d;
+    --border-bright: #30363d;
+    --accent: #00ff66;
+    --accent-dim: rgba(0,255,102,0.15);
+    --text: #c9d1d9;
+    --muted: #8b949e;
+    --header-text: #f0f6fc;
+    --danger: #ff5555;
+    --font-mono: 'Share Tech Mono', monospace;
+    --gradient-speed: 3s;
+    --terminal-width: 320px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  body::before {
+    content: " ";
+    position: fixed;
+    top:0;left:0;bottom:0;right:0;
+    background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.25) 50%);
+    background-size: 100% 4px;
+    pointer-events: none;
+    z-index: 9999;
+  }
+  .top-bar {
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 15px;
+    z-index: 10;
+    flex-shrink: 0;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand .title {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 16px;
+    text-shadow: 0 0 8px var(--accent-dim);
+    transition: 0.2s;
+    display: inline-block;
+  }
+  .brand .title:hover { animation: glitch 0.3s ease-in-out; }
+  @keyframes glitch {
+    0% { transform: skew(0deg,0deg); opacity:1; }
+    20% { transform: skew(5deg,-2deg); opacity:0.8; text-shadow: 2px 0 var(--danger), -2px 0 var(--accent); }
+    40% { transform: skew(-5deg,2deg); opacity:1; text-shadow: -2px 0 var(--danger), 2px 0 var(--accent); }
+    60% { transform: skew(3deg,-1deg); opacity:0.9; }
+    80% { transform: skew(-3deg,1deg); }
+    100% { transform: skew(0deg,0deg); opacity:1; }
+  }
+  .brand .status { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); }
+  .dot { width: 6px; height: 6px; background: var(--accent); box-shadow: 0 0 6px var(--accent); animation: blink 2s infinite; border-radius: 50%; }
+  @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.2;} }
+  .nav-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+  .nav-tabs button { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 6px 16px; font-family: var(--font-mono); font-size: 12px; cursor: pointer; transition: 0.15s; text-transform: uppercase; letter-spacing: 0.5px; }
+  .nav-tabs button:hover { background: var(--panel-hover); color: var(--text); border-color: var(--border-bright); }
+  .nav-tabs button.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); box-shadow: 0 0 12px var(--accent-dim); }
+  .sound-indicator { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--muted); cursor: pointer; user-select: none; }
+  .sound-indicator .ico { font-size: 14px; }
+  .app-layout { display: flex; flex: 1; overflow: hidden; }
+  .main { flex: 1; padding: 30px; overflow-y: auto; max-width: calc(100% - var(--terminal-width)); }
+  .side-terminal { width: var(--terminal-width); background: #07090e; border-left: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; overflow: hidden; }
+  .side-terminal .terminal-header { padding: 10px 15px; border-bottom: 1px solid var(--border); font-size: 11px; color: var(--muted); letter-spacing: 1px; background: #000; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+  .side-terminal .terminal-header .clear-btn { background: none; border: none; color: var(--danger); font-family: var(--font-mono); font-size: 10px; cursor: pointer; text-decoration: underline; }
+  .side-terminal .terminal-body { flex: 1; overflow-y: auto; padding: 8px 12px; font-size: 11px; line-height: 1.6; font-family: var(--font-mono); }
+  .side-terminal .terminal-body .log { color: var(--text); opacity: 0.9; border-bottom: 1px solid rgba(255,255,255,0.03); padding: 2px 0; }
+  .side-terminal .terminal-body .log .time { color: var(--muted); margin-right: 6px; }
+  .side-terminal .terminal-body .log .msg { color: var(--accent); }
+  .side-terminal .terminal-body .log .warn { color: #ffaa00; }
+  .side-terminal .terminal-body .log .err { color: var(--danger); }
+  @media (max-width:768px){ .side-terminal { display: none; } .main { max-width: 100%; } }
+
+  h1 { font-size: 18px; margin: 0 0 5px; color: var(--header-text); font-weight: normal; border-left: 3px solid var(--accent); padding-left: 10px; }
+  .subtitle { font-size: 12px; color: var(--muted); margin: 0 0 25px 13px; }
+  .panel { border: 2px solid transparent; background: var(--panel); margin-bottom: 20px; position: relative; background-clip: padding-box; }
+  .panel::before { content: ""; position: absolute; inset: -2px; z-index: -1; border-radius: 0; background: conic-gradient(from var(--angle, 0deg), var(--accent), var(--border-bright), var(--accent), var(--border-bright), var(--accent)); animation: rotate-border var(--gradient-speed) linear infinite; opacity: 0.6; }
+  @property --angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+  @keyframes rotate-border { to { --angle: 360deg; } }
+  @supports not (--angle:0deg){ .panel::before { background: var(--border); } }
+  .panel-head { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid var(--border); background: #07090e; }
+  .panel-head h2 { font-size: 11px; text-transform: uppercase; color: var(--muted); margin: 0; font-weight: normal; letter-spacing: 1px; }
+  .panel-body { padding: 20px; background: var(--panel); }
+  .field { display: block; margin-bottom: 15px; }
+  .field span { display: block; font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+  input, select, textarea { width: 100%; background: #000; border: 1px solid var(--border); padding: 10px 12px; font-size: 14px; color: var(--accent); font-family: var(--font-mono); transition: 0.15s; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: inset 0 0 5px var(--accent-dim); }
+  input[type=range] { padding: 0; accent-color: var(--accent); height: 4px; background: var(--border); border: none; }
+  textarea { resize: vertical; min-height: 60px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn { cursor: pointer; border: 1px solid var(--border); background: #000; padding: 10px 16px; font-size: 13px; font-family: var(--font-mono); display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: 0.15s; text-decoration: none; color: var(--text); }
+  .btn-primary { border-color: var(--accent); color: var(--accent); }
+  .btn-primary:hover { background: var(--accent); color: #000; box-shadow: 0 0 10px var(--accent-dim); }
+  .btn-secondary { border-color: #3b82f6; color: #3b82f6; }
+  .btn-secondary:hover { background: #3b82f6; color: #000; }
+  .btn-outline { border-color: var(--border-bright); color: var(--text); }
+  .btn-outline:hover { background: var(--panel-hover); border-color: var(--accent); color: var(--accent); }
+  .btn-full { width: 100%; justify-content: center; }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+  .err { color: var(--danger); font-size: 12px; margin-bottom: 15px; background: rgba(255,85,85,0.05); padding: 8px; border: 1px solid rgba(255,85,85,0.2); }
+  .modebtn { flex: 1; padding: 8px; font-size: 12px; border: 1px solid var(--border); background: #000; color: var(--muted); cursor: pointer; font-family: var(--font-mono); transition: 0.1s; }
+  .modebtn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+  .code-box { border: 1px solid var(--accent); background: #000; padding: 20px; text-align: center; margin-bottom: 15px; box-shadow: inset 0 0 15px var(--accent-dim); }
+  .code-box .code { font-size: 28px; letter-spacing: .25em; color: var(--accent); text-shadow: 0 0 8px var(--accent); }
+  .dash-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 25px; }
+  .dash-grid .panel { margin-bottom: 0; }
+  .dash-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px,1fr)); gap: 12px; }
+  .dash-stat { background: var(--panel); border: 1px solid var(--border); padding: 15px; text-align: center; }
+  .dash-stat .val { font-size: 28px; color: var(--accent); line-height: 1.2; }
+  .dash-stat .lab { font-size: 10px; color: var(--muted); margin-top: 4px; }
+  .dash-activity { border: 1px solid var(--border); background: var(--panel); padding: 15px; }
+  .dash-activity h3 { font-size: 11px; color: var(--muted); margin-bottom: 12px; letter-spacing: 1px; }
+  .act-item { display: flex; justify-content: space-between; font-size: 12px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+  .act-item:last-child { border-bottom: none; }
+  .act-item .code { color: var(--accent); letter-spacing: 1px; }
+  .act-item .time { color: var(--muted); font-size: 10px; }
+  .key-strength { display: flex; align-items: center; gap: 10px; margin-top: 5px; }
+  .key-strength .bar { flex: 1; height: 4px; background: var(--border); overflow: hidden; }
+  .key-strength .bar .fill { height: 100%; width: 0%; transition: width 0.3s, background 0.3s; }
+  .key-strength .label { font-size: 10px; color: var(--muted); min-width: 40px; text-align: right; }
+  .led-group { display: flex; gap: 12px; margin-top: 10px; }
+  .led { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--muted); }
+  .led .bulb { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: 0.3s; }
+  .led .bulb.on { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+  .led .bulb.off { background: var(--danger); box-shadow: 0 0 6px var(--danger); }
+  .led .bulb.pulse { animation: pulse-led 1s infinite; }
+  @keyframes pulse-led { 0%,100% { opacity:1; box-shadow:0 0 6px var(--accent); } 50% { opacity:0.3; box-shadow:0 0 2px var(--accent); } }
+  .steps { margin: 0; padding: 0; list-style: none; }
+  .steps li { display: flex; gap: 12px; margin-bottom: 12px; font-size: 13px; color: var(--text); line-height: 1.4; align-items: flex-start; }
+  .steps .n { font-size: 11px; color: var(--accent); background: var(--accent-dim); border: 1px solid var(--accent); width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .quick { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px; }
+  .quickbtn { display: flex; align-items: center; gap: 10px; border: 1px solid var(--border); background: var(--panel); padding: 15px; cursor: pointer; font-size: 13px; color: var(--text); text-align: left; font-family: var(--font-mono); transition: 0.15s; }
+  .quickbtn:hover { border-color: var(--accent); background: var(--panel-hover); color: var(--accent); }
+  .list-item { padding: 12px 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .list-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .loc-name { font-size: 13px; color: var(--header-text); }
+  .loc-coords { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .loc-detail { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .loc-tags { font-size: 10px; color: var(--accent); margin-top: 2px; }
+  .iconbtn { width: 32px; height: 32px; border: 1px solid var(--border); background: #000; cursor: pointer; color: var(--text); display: inline-flex; align-items: center; justify-content: center; font-family: var(--font-mono); transition: 0.1s; }
+  .iconbtn:hover { border-color: var(--accent); color: var(--accent); background: var(--panel-hover); }
+  .iconbtn.danger:hover { border-color: var(--danger); color: var(--danger); background: rgba(255,85,85,0.1); }
+  .muted { color: var(--muted); font-size: 12px; }
+  .hint { font-size: 10px; color: var(--muted); margin-top: 10px; line-height: 1.4; }
+  .link { color: var(--danger); font-size: 11px; background: none; border: none; cursor: pointer; text-decoration: underline; font-family: var(--font-mono); }
+  .loader-overlay { border: 1px solid var(--border); background: #000; padding: 30px 20px; text-align: center; margin-top: 10px; }
+  .loader-overlay .spinner { display: inline-block; width: 30px; height: 30px; border: 2px solid var(--border); border-top: 2px solid var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 15px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loader-overlay .progress-bar { width: 100%; height: 4px; background: var(--border); margin: 15px 0; overflow: hidden; }
+  .loader-overlay .progress-bar .fill { height: 100%; width: 0%; background: var(--accent); transition: width 0.2s; }
+  .loader-overlay .timer { color: var(--accent); font-size: 14px; letter-spacing: 2px; }
+  .clock-display { font-size: 16px; color: var(--accent); background: #000; padding: 6px 14px; border: 1px solid var(--border); display: inline-block; margin-bottom: 15px; letter-spacing: 2px; }
+  .countdown { font-size: 14px; color: #ffaa00; background: #000; padding: 8px 14px; border: 1px solid #ffaa00; display: inline-block; margin: 10px 0; letter-spacing: 1px; }
+  .countdown.positive { color: var(--accent); border-color: var(--accent); }
+  .countdown.negative { color: var(--danger); border-color: var(--danger); }
+  .map-container { border: 1px solid var(--border); background: #000; display: flex; flex-direction: column; margin-top: 20px; }
+  .map-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #07090e; border-bottom: 1px solid var(--border); }
+  .map-title { color: var(--muted); font-size: 11px; }
+  .btn-expand { background: #000; border: 1px solid var(--border); color: var(--text); padding: 4px 10px; cursor: pointer; font-size: 11px; font-family: var(--font-mono); transition: 0.1s; }
+  .btn-expand:hover { border-color: var(--accent); color: var(--accent); }
+  .map-container .map-frame { width: 100%; height: 400px; border: none; background: #000; }
+  .map-container.fullscreen { position: fixed; top:0;left:0;width:100vw;height:100vh;z-index:10000;border:none; }
+  .map-container.fullscreen .map-frame { height: calc(100vh - 35px); }
+  .search-box { margin-bottom: 20px; display: flex; gap: 10px; align-items: center; }
+  .search-box input { flex: 1; background: #000; border: 1px solid var(--border); padding: 10px 12px; font-size: 14px; color: var(--accent); font-family: var(--font-mono); transition: 0.15s; }
+  .search-box input:focus { outline: none; border-color: var(--accent); box-shadow: inset 0 0 5px var(--accent-dim); }
+  .search-box .search-count { font-size: 12px; color: var(--muted); white-space: nowrap; }
+  @media (max-width:700px){ .top-bar { flex-direction: column; align-items: stretch; padding: 15px; } .nav-tabs { justify-content: center; } .grid2, .grid3 { grid-template-columns: 1fr; } .quick { grid-template-columns: 1fr; } .dash-grid { grid-template-columns: 1fr; } .search-box { flex-wrap: wrap; } }
+</style>
+</head>
+<body>
+
+<header class="top-bar">
+  <div class="brand">
+    <div class="title">&gt; SYS_SECURE_V2</div>
+    <div class="status"><span class="dot"></span>ONLINE</div>
+  </div>
+  <div class="nav-tabs" id="navTabs"></div>
+  <div class="sound-indicator" id="soundToggle" title="Clique para alternar sons">
+    <span class="ico">🔊</span>
+    <span>ÁUDIO</span>
+  </div>
+</header>
+
+<div class="app-layout">
+  <main class="main" id="mainContent">
+    <div id="app"></div>
+  </main>
+  <aside class="side-terminal" id="sideTerminal">
+    <div class="terminal-header">
+      <span>► SYS_LOG</span>
+      <button class="clear-btn" id="clearLogsBtn">[LIMPAR]</button>
+    </div>
+    <div class="terminal-body" id="terminalBody"></div>
+  </aside>
+</div>
+
+<script>
+// ==========================================
+//  CONFIGURAÇÃO
+// ==========================================
+const CONFIG = {
+  LOCATIONS_XML_URL: 'locations.xml',
+  ENCRYPTION_KEY: 'SYS_SECURE_XML',
+};
+
+// ==========================================
+//  DADOS DE EXEMPLO (FALLBACK)
+// ==========================================
+const DEFAULT_LOCATIONS = [
+  {
+    id: 'l_exemplo_1',
+    name: 'SECTOR_A',
+    x: 2450.5,
+    y: -1875.3,
+    region: 'Zona Norte',
+    area: 'Grande São Paulo',
+    description: 'Base de operações secundária',
+    time: new Date().toISOString(),
+    tags: 'NORTE,URBANO'
+  },
+  {
+    id: 'l_exemplo_2',
+    name: 'BANCO_CENTRAL',
+    x: -1200.0,
+    y: 3400.0,
+    region: 'Centro',
+    area: 'Grande São Paulo',
+    description: 'Alvo principal',
+    time: new Date().toISOString(),
+    tags: 'CENTRO,ALVO'
+  },
+  {
+    id: 'l_exemplo_3',
+    name: 'AEROPORTO',
+    x: 5600.0,
+    y: -2300.0,
+    region: 'Zona Sul',
+    area: 'Grande São Paulo',
+    description: 'Ponto de fuga',
+    time: new Date().toISOString(),
+    tags: 'SUL,LOGISTICA'
+  }
+];
+
+// ==========================================
+//  ENCRIPTAÇÃO LEVE (XOR + Base64)
+// ==========================================
+function xorEncryptDecrypt(str, key) {
+  let result = '';
+  for (let i = 0; i < str.length; i++) {
+    result += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+  }
+  return result;
+}
+function encryptXML(xmlStr) {
+  const xorred = xorEncryptDecrypt(xmlStr, CONFIG.ENCRYPTION_KEY);
+  return btoa(xorred);
+}
+function decryptXML(encryptedB64) {
+  try {
+    const xorred = atob(encryptedB64);
+    return xorEncryptDecrypt(xorred, CONFIG.ENCRYPTION_KEY);
+  } catch (e) {
+    return null;
+  }
+}
+
+// ==========================================
+//  AUDIO
+// ==========================================
+let audioCtx = null;
+let soundEnabled = true;
+function initAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+}
+function playBeep(freq, duration, volume = 0.08, type = 'sine') {
+  if (!soundEnabled) return;
+  try {
+    initAudio();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  } catch(e) {}
+}
+function playHover() { playBeep(1000, 0.04, 0.05); }
+function playClick() { playBeep(700, 0.06, 0.07, 'sine'); }
+
+// ==========================================
+//  RELÓGIO BRASÍLIA (UTC-3)
+// ==========================================
+function getBrasiliaTime() {
+  const now = new Date();
+  return new Date(now.getTime() - 3 * 60 * 60 * 1000);
+}
+function formatBrasiliaTime(date) {
+  const d = date || getBrasiliaTime();
+  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+}
+function formatBrasiliaDate(date) {
+  const d = date || getBrasiliaTime();
+  return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+function fromBrasiliaISO(isoStr) {
+  if (!isoStr) return null;
+  const d = new Date(isoStr);
+  return new Date(d.getTime() - 3 * 60 * 60 * 1000);
+}
+function formatBrasiliaFromISO(isoStr) {
+  const d = fromBrasiliaISO(isoStr);
+  if (!d) return '';
+  return formatBrasiliaDate(d);
+}
+function getCountdown(targetISO) {
+  if (!targetISO) return null;
+  const now = getBrasiliaTime();
+  const target = fromBrasiliaISO(targetISO);
+  if (!target) return null;
+  const diffMs = target.getTime() - now.getTime();
+  const diffSec = Math.floor(diffMs / 1000);
+  const absSec = Math.abs(diffSec);
+  const hours = Math.floor(absSec / 3600);
+  const minutes = Math.floor((absSec % 3600) / 60);
+  const seconds = absSec % 60;
+  let str = '';
+  if (hours > 0) str += `${hours}h `;
+  if (minutes > 0 || hours > 0) str += `${minutes}min `;
+  str += `${seconds}s`;
+  if (diffSec >= 0) {
+    return { text: `Faltam ${str}`, positive: true };
+  } else {
+    return { text: `Atrasado ${str}`, positive: false };
+  }
+}
+
+// ==========================================
+//  LÓGICA DE ENCRIPTAÇÃO/DESENCRIPTAÇÃO
+// ==========================================
+const RANGE = 10000, STEP = 10;
+const AXIS_SIZE = RANGE * 2 * STEP + 1;
+const AXIS_BIG = BigInt(AXIS_SIZE);
+const DOMAIN = AXIS_BIG * AXIS_BIG;
+const CODE_LEN = 8;
+
+function mod(a, m) { const r = a % m; return r < 0n ? r + m : r; }
+function gcdBig(a, b) { a = a<0n?-a:a; b=b<0n?-b:b; while(b){[a,b]=[b,a%b];} return a; }
+function egcd(a, b) { if (b===0n) return [a,1n,0n]; const [g,x1,y1]=egcd(b,a%b); return [g,y1,x1-(a/b)*y1]; }
+function modInverse(a, m) { const [g,x]=egcd(mod(a,m),m); if(g!==1n) throw new Error('sem inverso'); return mod(x,m); }
+async function sha256Big(str) {
+  const enc = new TextEncoder().encode(str);
+  const digest = await crypto.subtle.digest('SHA-256', enc);
+  const bytes = new Uint8Array(digest);
+  let val = 0n; for (let i=0;i<8;i++) val = (val<<8n) | BigInt(bytes[i]);
+  return val;
+}
+async function deriveParams(key) {
+  let a = mod(await sha256Big(key+'::a'), DOMAIN); if (a===0n) a=1n;
+  while (gcdBig(a, DOMAIN) !== 1n) { a = mod(a+1n, DOMAIN); if (a===0n) a=1n; }
+  const b = mod(await sha256Big(key+'::b'), DOMAIN);
+  return {a,b};
+}
+function intToLetters(n, length) { let s='',v=n; for(let i=0;i<length;i++){ s=String.fromCharCode(65+Number(v%26n))+s; v=v/26n; } return s; }
+function lettersToInt(s) { let n=0n; for (const ch of s) n=n*26n+BigInt(ch.charCodeAt(0)-65); return n; }
+function coordToIndex(x,y){ const xi=BigInt(Math.round(x*STEP)+RANGE*STEP); const yi=BigInt(Math.round(y*STEP)+RANGE*STEP); return xi*AXIS_BIG+yi; }
+function indexToCoord(n){ const xi=n/AXIS_BIG, yi=n%AXIS_BIG; return {x:(Number(xi)-RANGE*STEP)/STEP, y:(Number(yi)-RANGE*STEP)/STEP}; }
+async function encryptCoord(x,y,key){
+  const N = coordToIndex(x,y);
+  const {a,b} = await deriveParams(key);
+  const C = mod(a*N+b, DOMAIN);
+  const letters = intToLetters(C, CODE_LEN);
+  const splitSeed = Number(mod(await sha256Big(key+'::split'), 3n));
+  const w1 = 3+splitSeed;
+  return `${letters.slice(0,w1)} ${letters.slice(w1)}`;
+}
+async function decryptCode(code,key){
+  const letters = code.toUpperCase().replace(/[^A-Z]/g,'');
+  if (letters.length !== CODE_LEN) throw new Error(`O código precisa de ${CODE_LEN} letras (tens ${letters.length}).`);
+  const C = lettersToInt(letters);
+  const {a,b} = await deriveParams(key);
+  const ainv = modInverse(a, DOMAIN);
+  const N = mod(ainv * mod(C-b, DOMAIN), DOMAIN);
+  return indexToCoord(N);
+}
+function forgeUrl(x,y,zoom){ return `https://forge.plebmasters.de/map?x=${x}&y=${y}&z=${zoom}&b=Realmap&o=User+Marker`; }
+function inRange(v){ return Number.isFinite(v) && v>=-RANGE && v<=RANGE; }
+
+// ==========================================
+//  STORE (localStorage)
+// ==========================================
+const store = {
+  getLocations(){ try{ return JSON.parse(localStorage.getItem('gta_locations')||'[]'); }catch{ return []; } },
+  setLocations(v){ localStorage.setItem('gta_locations', JSON.stringify(v)); },
+  getHistory(){ try{ return JSON.parse(localStorage.getItem('gta_history')||'[]'); }catch{ return []; } },
+  setHistory(v){ localStorage.setItem('gta_history', JSON.stringify(v)); },
+};
+
+// ==========================================
+//  STATE
+// ==========================================
+let state = {
+  tab: 'dashboard',
+  locations: [],
+  remoteLocations: [],
+  history: store.getHistory(),
+  enc: { mode: 'manual', locId: '', x:'', y:'', zoom:3, key:'', targetTime:'', code:'', error:'', copied:false },
+  dec: { code:'', key:'', zoom:3, error:'', result:null },
+  locForm: { name:'', x:'', y:'', region:'', area:'', description:'', time:'', error:'' },
+  editingId: null,
+  editDraft: {},
+  loading: false,
+  loadingType: '',
+  progress: 0,
+  elapsed: 0,
+  logs: [],
+  searchQuery: '',
+};
+if (state.locations.length) state.enc.locId = state.locations[0].id;
+
+// ==========================================
+//  TERMINAL
+// ==========================================
+function addLog(msg, type='info') {
+  const ts = new Date();
+  const timeStr = ts.toTimeString().slice(0,8);
+  state.logs.push({ time: timeStr, msg, type });
+  if (state.logs.length > 200) state.logs.shift();
+  renderTerminal();
+}
+function renderTerminal() {
+  const container = document.getElementById('terminalBody');
+  if (!container) return;
+  container.innerHTML = state.logs.map(log =>
+    `<div class="log"><span class="time">[${log.time}]</span> <span class="${log.type}">${log.msg}</span></div>`
+  ).join('');
+  container.scrollTop = container.scrollHeight;
+}
+
+// ==========================================
+//  FAVICON DINÂMICO
+// ==========================================
+function updateFavicon(status) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 16; canvas.height = 16;
+  const ctx = canvas.getContext('2d');
+  let color = '#00ff66';
+  if (status === 'processing') color = '#ffaa00';
+  else if (status === 'error') color = '#ff5555';
+  else if (status === 'offline') color = '#555';
+  ctx.fillStyle = '#090a0f';
+  ctx.fillRect(0,0,16,16);
+  ctx.fillStyle = color;
+  ctx.font = '12px monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('◉', 8, 9);
+  const link = document.querySelector("link[rel*='icon']") || document.createElement('link');
+  link.type = 'image/x-icon';
+  link.rel = 'shortcut icon';
+  link.href = canvas.toDataURL('image/png');
+  document.head.appendChild(link);
+}
+
+// ==========================================
+//  FORÇA DA CHAVE
+// ==========================================
+function getKeyStrength(key) {
+  let score = 0;
+  if (key.length >= 8) score += 25;
+  else if (key.length >= 4) score += 10;
+  if (/[a-z]/.test(key)) score += 25;
+  if (/[A-Z]/.test(key)) score += 25;
+  if (/[0-9]/.test(key)) score += 15;
+  if (/[^a-zA-Z0-9]/.test(key)) score += 10;
+  return Math.min(score, 100);
+}
+function getStrengthLabel(score) {
+  if (score < 30) return 'FRACA';
+  if (score < 60) return 'MÉDIA';
+  if (score < 80) return 'FORTE';
+  return 'EXCELENTE';
+}
+function getStrengthColor(score) {
+  if (score < 30) return '#ff5555';
+  if (score < 60) return '#ffaa00';
+  if (score < 80) return '#00ccff';
+  return '#00ff66';
+}
+
+// ==========================================
+//  SETSTATE
+// ==========================================
+function setState(patch){ state = {...state, ...patch}; render(); }
+
+// ==========================================
+//  TABS
+// ==========================================
+const TABS = [
+  {id:'dashboard', label:'DASHBOARD', icon:'>' },
+  {id:'encrypt', label:'ENCRYPT', icon:'#' },
+  {id:'decrypt', label:'DECRYPT', icon:'?' },
+  {id:'locations', label:'LOCAIS', icon:'=' },
+  {id:'history', label:'HISTÓRICO', icon:'*' },
+];
+
+function renderNav(){
+  const container = document.getElementById('navTabs');
+  container.innerHTML = TABS.map(t => `
+    <button class="${state.tab===t.id?'active':''}" data-tab="${t.id}">${t.icon} ${t.label}</button>
+  `).join('');
+  container.querySelectorAll('button').forEach(b => {
+    b.onclick = () => { playClick(); setState({tab:b.dataset.tab}); };
+    b.addEventListener('mouseenter', playHover);
+  });
+}
+
+function header(title, subtitle){
+  return `<h1>${title}</h1>${subtitle?`<p class="subtitle">${subtitle}</p>`:''}`;
+}
+
+// ==========================================
+//  RELÓGIO
+// ==========================================
+function renderClock() {
+  const now = getBrasiliaTime();
+  return `<div class="clock-display">⏱ ${formatBrasiliaTime(now)} BRT</div>`;
+}
+
+// ==========================================
+//  CARREGAR XML REMOTO (com fallback)
+// ==========================================
+async function loadRemoteLocations() {
+  try {
+    addLog('A carregar base de dados remota (XML encriptado)...', 'info');
+    const response = await fetch(CONFIG.LOCATIONS_XML_URL);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const rawText = await response.text();
+    let xmlText = rawText;
+
+    // Tentar desencriptar
+    const decrypted = decryptXML(rawText);
+    if (decrypted !== null && decrypted.trim().startsWith('<?xml')) {
+      xmlText = decrypted;
+      addLog('Ficheiro encriptado detectado e desencriptado.', 'info');
+    } else {
+      addLog('Ficheiro em texto simples (não encriptado).', 'warn');
+    }
+
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+    if (xmlDoc.querySelector('parsererror')) {
+      throw new Error('Erro no formato do XML');
+    }
+    const locationNodes = xmlDoc.querySelectorAll('location');
+    const remote = Array.from(locationNodes).map(node => {
+      const get = (tag) => node.querySelector(tag)?.textContent?.trim() || '';
+      return {
+        id: get('id') || 'l_' + Date.now() + '_' + Math.random().toString(36).slice(2,7),
+        name: get('name') || 'UNKNOWN',
+        x: parseFloat(get('x')) || 0,
+        y: parseFloat(get('y')) || 0,
+        region: get('region'),
+        area: get('area'),
+        description: get('description'),
+        time: get('last_update') || null,
+        tags: get('tags') || '',
+      };
+    });
+    state.remoteLocations = remote;
+    const manual = state.locations.filter(l => !l._remote);
+    const remoteMarked = remote.map(l => ({ ...l, _remote: true }));
+    const merged = [...remoteMarked];
+    manual.forEach(m => {
+      const idx = merged.findIndex(r => r.id === m.id);
+      if (idx >= 0) merged[idx] = { ...merged[idx], ...m, _remote: false };
+      else merged.push({ ...m, _remote: false });
+    });
+    state.locations = merged;
+    store.setLocations(state.locations.filter(l => !l._remote));
+    addLog(`Base remota carregada: ${remote.length} locais`, 'info');
+    addLog(`Total de locais: ${state.locations.length}`, 'info');
+  } catch(err) {
+    // Se falhar (CORS, ficheiro inexistente, etc.), usar dados de exemplo
+    addLog(`Erro ao carregar XML: ${err.message}`, 'err');
+    if (state.locations.length === 0) {
+      addLog('A utilizar dados de exemplo (fallback)', 'warn');
+      state.locations = DEFAULT_LOCATIONS.map(l => ({ ...l, _remote: false }));
+      store.setLocations(state.locations.filter(l => !l._remote));
+    } else {
+      // Manter apenas os manuais, descartar remotos (não carregados)
+      state.locations = state.locations.filter(l => !l._remote);
+    }
+  }
+  render(); // Forçar renderização após carregamento
+}
+
+// ==========================================
+//  EXPORTAR XML ENCRIPTADO
+// ==========================================
+function exportLocationsXML() {
+  const locs = state.locations;
+  if (!locs.length) {
+    addLog('Nenhum local para exportar', 'warn');
+    return;
+  }
+  let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<locations>\n';
+  locs.forEach(l => {
+    xml += '  <location>\n';
+    xml += `    <id>${escXML(l.id)}</id>\n`;
+    xml += `    <name>${escXML(l.name)}</name>\n`;
+    xml += `    <x>${l.x}</x>\n`;
+    xml += `    <y>${l.y}</y>\n`;
+    xml += `    <region>${escXML(l.region || '')}</region>\n`;
+    xml += `    <area>${escXML(l.area || '')}</area>\n`;
+    xml += `    <description>${escXML(l.description || '')}</description>\n`;
+    const update = l.time || new Date().toISOString();
+    xml += `    <last_update>${update}</last_update>\n`;
+    xml += `    <tags>${escXML(l.tags || '')}</tags>\n`;
+    xml += '  </location>\n';
+  });
+  xml += '</locations>';
+
+  const encrypted = encryptXML(xml);
+  const blob = new Blob([encrypted], { type: 'application/xml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'locations.xml';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  addLog(`Exportados ${locs.length} locais para XML encriptado`, 'info');
+}
+function escXML(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ==========================================
+//  DASHBOARD
+// ==========================================
+function renderDashboard(){
+  const last5 = state.history.slice(0,5);
+  return `
+    ${header('PAINEL DE CONTROLO OPERACIONAL','Sistema de encriptação de coordenadas para transmissão segura')}
+    ${renderClock()}
+    <div class="dash-grid">
+      <div>
+        <div class="dash-stats">
+          <div class="dash-stat"><div class="val">${state.locations.length}</div><div class="lab">LOCAIS</div></div>
+          <div class="dash-stat"><div class="val">${state.history.length}</div><div class="lab">TRANSMISSÕES</div></div>
+          <div class="dash-stat"><div class="val">${CODE_LEN}</div><div class="lab">BYTES/CIFRA</div></div>
+          <div class="dash-stat"><div class="val">${state.locations.length>0?'✔':'✖'}</div><div class="lab">BASE DADOS</div></div>
+        </div>
+        <div class="led-group">
+          <div class="led"><span class="bulb on pulse"></span> SISTEMA</div>
+          <div class="led"><span class="bulb ${state.loading?'pulse on':'on'}"></span> PROCESSAMENTO</div>
+          <div class="led"><span class="bulb ${state.history.length?'on':'off'}"></span> TRANSMISSÕES</div>
+        </div>
+      </div>
+      <div class="dash-activity">
+        <h3>ÚLTIMAS TRANSMISSÕES</h3>
+        ${last5.length===0 ? '<div class="muted" style="padding:10px 0;">Nenhuma transmissão registada.</div>' :
+          last5.map(h => `
+            <div class="act-item">
+              <span class="code">${h.code}</span>
+              <span class="time">${new Date(h.ts).toLocaleTimeString()}</span>
+            </div>
+          `).join('')
+        }
+        ${state.history.length>5 ? `<div class="act-item" style="border:none;padding-top:10px;"><span class="muted">+ ${state.history.length-5} mais</span></div>` : ''}
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h2>[INSTRUÇÕES_DE_OPERACAO]</h2></div>
+      <div class="panel-body">
+        <ol class="steps">
+          <li><span class="n">01</span><span>Selecione coordenadas predefinidas ou insira valores manuais nos eixos X/Y.</span></li>
+          <li><span class="n">02</span><span>Insira uma palavra-chave segura (opcional) e uma data/hora alvo (opcional).</span></li>
+          <li><span class="n">03</span><span>Transmita apenas o bloco de letras gerado via canal de rádio.</span></li>
+          <li><span class="n">04</span><span>O recetor descodifica os dados introduzindo o código e a chave partilhada (opcional).</span></li>
+        </ol>
+      </div>
+    </div>
+    <div class="quick">
+      <button class="quickbtn" data-go="encrypt">&gt; INICIAR_ENCRIPTAÇÃO</button>
+      <button class="quickbtn" data-go="decrypt">&gt; ACeder_DESENCRIPTAÇÃO</button>
+    </div>
+  `;
+}
+
+// ==========================================
+//  LOADER
+// ==========================================
+function renderLoader(type){
+  return `
+    <div class="loader-overlay">
+      <div class="spinner"></div>
+      <div class="progress-bar"><div class="fill" style="width:${state.progress}%;"></div></div>
+      <div class="timer">${state.elapsed}s</div>
+      <div class="muted" style="margin-top:10px;">${type==='encrypt' ? 'A encriptar coordenadas...' : 'A desencriptar código...'}</div>
+    </div>
+  `;
+}
+
+// ==========================================
+//  ENCRYPT
+// ==========================================
+function renderEncrypt(){
+  const e = state.enc;
+  const selectedLoc = state.locations.find(l => l.id === e.locId);
+  const activeX = e.mode === 'preset' ? selectedLoc?.x : parseFloat(e.x);
+  const activeY = e.mode === 'preset' ? selectedLoc?.y : parseFloat(e.y);
+
+  if (state.loading && state.loadingType==='encrypt') {
+    return `
+      ${header('MÓDULO DE ENCRIPTAÇÃO','Converter coordenadas espaciais em cifra alfabética')}
+      ${renderClock()}
+      ${renderLoader('encrypt')}
+    `;
+  }
+
+  const strength = getKeyStrength(e.key);
+  const strengthLabel = getStrengthLabel(strength);
+  const strengthColor = getStrengthColor(strength);
+
+  return `
+    ${header('MÓDULO DE ENCRIPTAÇÃO','Converter coordenadas espaciais em cifra alfabética')}
+    ${renderClock()}
+    <div class="panel">
+      <div class="panel-head"><h2>[FONTE_DE_DADOS]</h2></div>
+      <div class="panel-body">
+        <div class="row" style="margin-bottom:20px;">
+          <button class="modebtn ${e.mode==='manual'?'active':''}" id="mode-manual">[COORDS_MANUAIS]</button>
+          <button class="modebtn ${e.mode==='preset'?'active':''}" id="mode-preset" ${state.locations.length?'':'disabled'}>[BASE_DE_DADOS]</button>
+        </div>
+        ${e.mode==='manual' ? `
+          <div class="grid2">
+            <label class="field"><span>EIXO_X</span><input id="enc-x" type="number" step="0.1" min="-${RANGE}" max="${RANGE}" value="${e.x}"></label>
+            <label class="field"><span>EIXO_Y</span><input id="enc-y" type="number" step="0.1" min="-${RANGE}" max="${RANGE}" value="${e.y}"></label>
+          </div>
+        ` : (
+          state.locations.length ? `
+            <label class="field"><span>LOCAL_SELECIONADO</span>
+              <select id="loc-select">
+                ${state.locations.map(l => `<option value="${l.id}" ${l.id===e.locId?'selected':''}>${l.name}</option>`).join('')}
+              </select>
+              ${selectedLoc?`<span style="color:var(--accent);display:block;margin-top:6px;">X: ${selectedLoc.x} | Y: ${selectedLoc.y}</span>`:''}
+            </label>
+          ` : `<p class="muted">Base de dados vazia. Utilize o modo manual.</p>`
+        )}
+        <label class="field"><span>CHAVE_SECRETA_DE_CIFRA (opcional)</span>
+          <input id="enc-key" type="text" value="${e.key}" placeholder="DEIXE VAZIO PARA CHAVE PADRÃO">
+          <div class="key-strength">
+            <div class="bar"><div class="fill" style="width:${strength}%; background:${strengthColor};"></div></div>
+            <span class="label" style="color:${strengthColor};">${strengthLabel}</span>
+          </div>
+        </label>
+        <label class="field"><span>DATA/HORA ALVO (opcional, BRT)</span>
+          <input id="enc-time" type="datetime-local" value="${e.targetTime}">
+        </label>
+        <label class="field"><span>ZOOM_MAPA [${e.zoom}]</span><input id="enc-zoom" type="range" min="1" max="8" value="${e.zoom}"></label>
+        ${e.error?`<div class="err">&gt; ERRO: ${e.error}</div>`:''}
+        <button id="enc-generate" class="btn btn-primary btn-full">&gt; EXECUTAR_ENCRIPTAÇÃO</button>
+      </div>
+    </div>
+    ${e.code ? `
+      <div class="panel" id="result-panel">
+        <div class="panel-head"><h2>[OUTPUT_CIFRA]</h2></div>
+        <div class="panel-body">
+          <div class="code-box"><div class="code">${e.code}</div></div>
+          ${e.targetTime ? `<div style="color:var(--accent);text-align:center;margin-bottom:10px;">⏱ Alvo: ${formatBrasiliaFromISO(e.targetTime)}</div>` : ''}
+          <div class="row" style="margin-bottom:15px;">
+            <button id="enc-copy" class="btn btn-outline" style="flex:1;">${e.copied?'[OK] COPIADO':'[COPIAR_CÓDIGO]'}</button>
+            <a class="btn btn-outline" style="flex:1;" href="${forgeUrl(activeX,activeY,e.zoom)}" target="_blank" rel="noopener noreferrer">[ABRIR_MAPA_EXTERNO]</a>
+          </div>
+          <div class="map-container">
+            <div class="map-header">
+              <span class="map-title">&gt; MAP_VIEWER_TERMINAL</span>
+              <button class="btn-expand" onclick="toggleFullscreen(this)">[⛶ EXPANDIR]</button>
+            </div>
+            <iframe class="map-frame" src="${forgeUrl(activeX,activeY,e.zoom)}" allowfullscreen></iframe>
+          </div>
+        </div>
+      </div>
+    ` : ''}
+  `;
+}
+
+// ==========================================
+//  DECRYPT
+// ==========================================
+function renderDecrypt(){
+  const d = state.dec;
+  if (state.loading && state.loadingType==='decrypt') {
+    return `
+      ${header('MÓDULO DE DESENCRIPTAÇÃO','Intercetar código e traduzir em coordenadas espaciais')}
+      ${renderClock()}
+      ${renderLoader('decrypt')}
+    `;
+  }
+  let countdownHtml = '';
+  if (d.result && d.result.targetTime) {
+    const cd = getCountdown(d.result.targetTime);
+    if (cd) {
+      countdownHtml = `<div class="countdown ${cd.positive?'positive':'negative'}">${cd.text}</div>`;
+    }
+  }
+  return `
+    ${header('MÓDULO DE DESENCRIPTAÇÃO','Intercetar código e traduzir em coordenadas espaciais')}
+    ${renderClock()}
+    <div class="panel">
+      <div class="panel-body">
+        <label class="field"><span>CÓDIGO_INTERCETADO</span><input id="dec-code" type="text" value="${d.code}" placeholder="EX: VXQP MZRK" style="letter-spacing:2px;font-size:16px;"></label>
+        <label class="field"><span>CHAVE_DE_ACESSO (opcional)</span><input id="dec-key" type="text" value="${d.key}" placeholder="DEIXE VAZIO PARA CHAVE PADRÃO"></label>
+        <label class="field"><span>ZOOM_MAPA [${d.zoom}]</span><input id="dec-zoom" type="range" min="1" max="8" value="${d.zoom}"></label>
+        ${d.error?`<div class="err">&gt; ERRO: ${d.error}</div>`:''}
+        <button id="dec-run" class="btn btn-secondary btn-full">&gt; EXECUTAR_DESENCRIPTAÇÃO</button>
+      </div>
+    </div>
+    ${d.result ? `
+      <div class="panel">
+        <div class="panel-head"><h2>[RESULTADO_DESCODIFICADO]</h2></div>
+        <div class="panel-body">
+          ${d.result.match?`<div style="color:var(--accent);margin-bottom:10px;">&gt; MATCH_ENCONTRADO: ${d.result.match.name}</div>`:''}
+          <div class="code-box" style="padding:15px; font-size:16px; margin-bottom:15px;">X: ${d.result.x.toFixed(1)} | Y: ${d.result.y.toFixed(1)}</div>
+          ${countdownHtml}
+          <div class="map-container">
+            <div class="map-header">
+              <span class="map-title">&gt; MAP_VIEWER_TERMINAL</span>
+              <button class="btn-expand" onclick="toggleFullscreen(this)">[⛶ EXPANDIR]</button>
+            </div>
+            <iframe class="map-frame" src="${forgeUrl(d.result.x,d.result.y,d.zoom)}" allowfullscreen></iframe>
+          </div>
+        </div>
+      </div>
+    ` : ''}
+  `;
+}
+
+// ==========================================
+//  LOCATIONS (com pesquisa e exportação)
+// ==========================================
+function renderLocations(){
+  const f = state.locForm;
+  const query = state.searchQuery || '';
+  const filtered = state.locations.filter(l => {
+    if (!query) return true;
+    const q = query.toLowerCase();
+    const searchFields = [
+      l.name, l.region, l.area, l.description, l.tags,
+      String(l.x), String(l.y)
+    ].join(' ').toLowerCase();
+    return searchFields.includes(q);
+  });
+
+  return `
+    ${header('BASE DE DADOS DE LOCAIS','Gestão de coordenadas e informação dos locais')}
+    <div class="panel">
+      <div class="panel-head"><h2>[PESQUISA]</h2></div>
+      <div class="panel-body">
+        <div class="search-box">
+          <input id="searchInput" type="text" value="${query}" placeholder="Pesquisar por nome, região, coordenadas...">
+          <span class="search-count">${filtered.length} / ${state.locations.length}</span>
+        </div>
+        <button id="exportXmlBtn" class="btn btn-primary">⬇ EXPORTAR XML (ENCRIPTADO)</button>
+        <button id="refreshXmlBtn" class="btn btn-outline" style="margin-left:10px;">⟳ RECARREGAR XML</button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h2>[REGISTAR_NOVO_LOCAL]</h2></div>
+      <div class="panel-body">
+        <div class="grid3" style="grid-template-columns: 1fr 100px 100px 200px;">
+          <label class="field"><span>IDENTIFICAÇÃO</span><input id="loc-name" value="${f.name}" placeholder="EX: SECTOR_A"></label>
+          <label class="field"><span>X</span><input id="loc-x" type="number" step="0.1" min="-${RANGE}" max="${RANGE}" value="${f.x}"></label>
+          <label class="field"><span>Y</span><input id="loc-y" type="number" step="0.1" min="-${RANGE}" max="${RANGE}" value="${f.y}"></label>
+          <label class="field"><span>DATA/HORA (BRT)</span><input id="loc-time" type="datetime-local" value="${f.time}"></label>
+        </div>
+        <div class="grid2">
+          <label class="field"><span>REGIÃO (local)</span><input id="loc-region" value="${f.region}" placeholder="Ex: Centro, Zona Norte"></label>
+          <label class="field"><span>REGIÃO (abrangente)</span><input id="loc-area" value="${f.area}" placeholder="Ex: Cidade, Estado"></label>
+        </div>
+        <label class="field"><span>DESCRIÇÃO</span><textarea id="loc-description" rows="2" placeholder="Descrição do local">${f.description}</textarea></label>
+        ${f.error?`<div class="err">&gt; ERRO: ${f.error}</div>`:''}
+        <button id="loc-add" class="btn btn-primary">&gt; ADICIONAR_REGISTO</button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h2>[LISTA_DE_LOCAIS (${filtered.length})]</h2></div>
+      <div class="panel-body" style="padding:0 15px;">
+        ${filtered.length===0 ? `<p class="muted" style="padding:15px 0;">Nenhum local encontrado.</p>` :
+          filtered.map(l => {
+            const isEditing = state.editingId === l.id;
+            if (isEditing) {
+              return `
+                <div class="list-item" style="display:grid;grid-template-columns:1fr 90px 90px 200px auto;gap:10px;align-items:center;padding:10px 0;">
+                  <input class="edit-name" data-id="${l.id}" value="${state.editDraft.name}">
+                  <input class="edit-x" data-id="${l.id}" type="number" step="0.1" value="${state.editDraft.x}">
+                  <input class="edit-y" data-id="${l.id}" type="number" step="0.1" value="${state.editDraft.y}">
+                  <input class="edit-time" data-id="${l.id}" type="datetime-local" value="${state.editDraft.time||''}">
+                  <div class="row">
+                    <button class="iconbtn edit-save" data-id="${l.id}" style="color:var(--accent);">[✓]</button>
+                    <button class="iconbtn edit-cancel">[X]</button>
+                  </div>
+                </div>
+                <div class="grid2" style="padding:0 0 10px 0;">
+                  <input class="edit-region" data-id="${l.id}" value="${state.editDraft.region||''}" placeholder="Região local">
+                  <input class="edit-area" data-id="${l.id}" value="${state.editDraft.area||''}" placeholder="Região abrangente">
+                  <textarea class="edit-description" data-id="${l.id}" rows="2" placeholder="Descrição">${state.editDraft.description||''}</textarea>
+                </div>
+              `;
+            }
+            return `
+              <div class="list-item">
+                <div>
+                  <div class="loc-name">${l.name}</div>
+                  <div class="loc-coords">X: ${l.x} | Y: ${l.y}</div>
+                  ${l.region ? `<div class="loc-detail">📍 ${l.region}${l.area ? ' · '+l.area : ''}</div>` : ''}
+                  ${l.description ? `<div class="loc-detail">📝 ${l.description}</div>` : ''}
+                  ${l.time ? `<div class="loc-time">⏱ ${formatBrasiliaFromISO(l.time)}</div>` : ''}
+                  ${l.tags ? `<div class="loc-tags">🏷️ ${l.tags}</div>` : ''}
+                  ${l._remote ? '<span style="color:var(--muted);font-size:9px;">[REMOTO]</span>' : ''}
+                </div>
+                <div class="row">
+                  <button class="iconbtn loc-edit" data-id="${l.id}">[✎]</button>
+                  ${!l._remote ? `<button class="iconbtn danger loc-del" data-id="${l.id}">[🗑]</button>` : ''}
+                </div>
+              </div>
+            `;
+          }).join('')
+        }
+      </div>
+    </div>
+  `;
+}
+
+// ==========================================
+//  HISTORY
+// ==========================================
+function renderHistory(){
+  return `
+    ${header('REGISTO DE TRANSMISSÕES','Histórico de códigos gerados nesta sessão')}
+    <div class="panel">
+      <div class="panel-head"><h2>[BUFFER_HISTORICO]</h2>${state.history.length?`<button class="link" id="hist-clear">[LIMPAR_LOGS]</button>`:''}</div>
+      <div class="panel-body" style="padding:0 15px;">
+        ${state.history.length===0 ? `<p class="muted" style="padding:15px 0;">Sem registos no buffer.</p>` :
+          state.history.map(h => `
+            <div class="list-item">
+              <div>
+                <div style="letter-spacing:2px;color:var(--accent);">${h.code}</div>
+                <div style="font-size:10px;color:var(--muted);margin-top:2px;">REF: ${h.label} // ${new Date(h.ts).toLocaleTimeString()}</div>
+                ${h.targetTime ? `<div style="font-size:10px;color:var(--accent);">⏱ Alvo: ${formatBrasiliaFromISO(h.targetTime)}</div>` : ''}
+              </div>
+            </div>
+          `).join('')
+        }
+      </div>
+    </div>
+  `;
+}
+
+// ==========================================
+//  RENDER (com preservação de foco)
+// ==========================================
+let previousActiveElement = null;
+
+function render(){
+  previousActiveElement = document.activeElement;
+  renderNav();
+  const app = document.getElementById('app');
+  if (state.tab==='dashboard') app.innerHTML = renderDashboard();
+  else if (state.tab==='encrypt') app.innerHTML = renderEncrypt();
+  else if (state.tab==='decrypt') app.innerHTML = renderDecrypt();
+  else if (state.tab==='locations') app.innerHTML = renderLocations();
+  else if (state.tab==='history') app.innerHTML = renderHistory();
+  bindEvents();
+  renderTerminal();
+  updateFavicon(state.loading ? 'processing' : 'online');
+  updateClock();
+
+  // Restaurar foco no input de pesquisa
+  if (state.tab === 'locations' && previousActiveElement && previousActiveElement.id === 'searchInput') {
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+      searchInput.focus();
+      const len = searchInput.value.length;
+      searchInput.setSelectionRange(len, len);
+    }
+  }
+
+  if (state.tab === 'decrypt' && state.dec.result && state.dec.result.targetTime) {
+    if (window.countdownInterval) clearInterval(window.countdownInterval);
+    window.countdownInterval = setInterval(() => {
+      const cdEl = document.querySelector('.countdown');
+      if (cdEl && state.dec.result.targetTime) {
+        const cd = getCountdown(state.dec.result.targetTime);
+        if (cd) {
+          cdEl.textContent = cd.text;
+          cdEl.className = `countdown ${cd.positive?'positive':'negative'}`;
+        }
+      } else {
+        clearInterval(window.countdownInterval);
+      }
+    }, 1000);
+  } else {
+    if (window.countdownInterval) {
+      clearInterval(window.countdownInterval);
+      window.countdownInterval = null;
+    }
+  }
+}
+
+let clockInterval = null;
+function updateClock() {
+  if (clockInterval) clearInterval(clockInterval);
+  clockInterval = setInterval(() => {
+    const clocks = document.querySelectorAll('.clock-display');
+    if (clocks.length) {
+      const now = getBrasiliaTime();
+      const timeStr = formatBrasiliaTime(now);
+      clocks.forEach(el => el.textContent = `⏱ ${timeStr} BRT`);
+    } else {
+      clearInterval(clockInterval);
+    }
+  }, 1000);
+}
+
+// ==========================================
+//  BIND EVENTS
+// ==========================================
+function bindEvents(){
+  document.querySelectorAll('button, .btn, .iconbtn, .quickbtn, .modebtn, .nav-tabs button, .btn-expand, .link')
+    .forEach(el => {
+      el.addEventListener('mouseenter', playHover);
+      if (!el.dataset.soundBound) {
+        el.addEventListener('click', playClick);
+        el.dataset.soundBound = 'true';
+      }
+    });
+
+  document.querySelectorAll('[data-go]').forEach(b => {
+    b.onclick = (e) => { playClick(); setState({tab:b.dataset.go}); };
+    b.addEventListener('mouseenter', playHover);
+  });
+
+  document.addEventListener('keydown', handleShortcuts);
+
+  document.getElementById('clearLogsBtn')?.addEventListener('click', () => {
+    state.logs = [];
+    renderTerminal();
+    addLog('Logs limpos', 'warn');
+  });
+
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', e => {
+      state.searchQuery = e.target.value;
+      render();
+    });
+  }
+
+  document.getElementById('exportXmlBtn')?.addEventListener('click', () => {
+    playClick();
+    exportLocationsXML();
+  });
+
+  document.getElementById('refreshXmlBtn')?.addEventListener('click', () => {
+    playClick();
+    loadRemoteLocations();
+  });
+
+  if (state.tab==='encrypt'){
+    document.getElementById('mode-manual')?.addEventListener('click', () => { playClick(); setState({enc:{...state.enc, mode:'manual'}}); });
+    document.getElementById('mode-preset')?.addEventListener('click', () => { playClick(); setState({enc:{...state.enc, mode:'preset'}}); });
+    document.getElementById('loc-select')?.addEventListener('change', e => setState({enc:{...state.enc, locId:e.target.value}}));
+    document.getElementById('enc-x')?.addEventListener('input', e => state.enc.x = e.target.value);
+    document.getElementById('enc-y')?.addEventListener('input', e => state.enc.y = e.target.value);
+    document.getElementById('enc-key')?.addEventListener('input', e => {
+      state.enc.key = e.target.value;
+      const strength = getKeyStrength(e.target.value);
+      const color = getStrengthColor(strength);
+      const label = getStrengthLabel(strength);
+      const fill = document.querySelector('.key-strength .fill');
+      const labelEl = document.querySelector('.key-strength .label');
+      if (fill) { fill.style.width = strength+'%'; fill.style.background = color; }
+      if (labelEl) { labelEl.textContent = label; labelEl.style.color = color; }
+    });
+    document.getElementById('enc-time')?.addEventListener('input', e => state.enc.targetTime = e.target.value);
+    document.getElementById('enc-zoom')?.addEventListener('input', e => setState({enc:{...state.enc, zoom:Number(e.target.value)}}));
+    document.getElementById('enc-generate')?.addEventListener('click', onGenerate);
+    document.getElementById('enc-copy')?.addEventListener('click', () => {
+      navigator.clipboard.writeText(state.enc.code);
+      setState({enc:{...state.enc, copied:true}});
+      addLog('Código copiado para a área de transferência', 'info');
+      setTimeout(()=> setState({enc:{...state.enc, copied:false}}), 2000);
+    });
+  }
+  if (state.tab==='decrypt'){
+    document.getElementById('dec-code')?.addEventListener('input', e => state.dec.code = e.target.value);
+    document.getElementById('dec-key')?.addEventListener('input', e => state.dec.key = e.target.value);
+    document.getElementById('dec-zoom')?.addEventListener('input', e => setState({dec:{...state.dec, zoom:Number(e.target.value)}}));
+    document.getElementById('dec-run')?.addEventListener('click', onDecrypt);
+  }
+  if (state.tab==='locations'){
+    document.getElementById('loc-name')?.addEventListener('input', e => state.locForm.name = e.target.value);
+    document.getElementById('loc-x')?.addEventListener('input', e => state.locForm.x = e.target.value);
+    document.getElementById('loc-y')?.addEventListener('input', e => state.locForm.y = e.target.value);
+    document.getElementById('loc-time')?.addEventListener('input', e => state.locForm.time = e.target.value);
+    document.getElementById('loc-region')?.addEventListener('input', e => state.locForm.region = e.target.value);
+    document.getElementById('loc-area')?.addEventListener('input', e => state.locForm.area = e.target.value);
+    document.getElementById('loc-description')?.addEventListener('input', e => state.locForm.description = e.target.value);
+    document.getElementById('loc-add')?.addEventListener('click', onAddLocation);
+
+    document.querySelectorAll('.loc-edit').forEach(b => b.onclick = () => {
+      const l = state.locations.find(x=>x.id===b.dataset.id);
+      if (!l) return;
+      let timeVal = '';
+      if (l.time) timeVal = l.time.slice(0,16);
+      setState({
+        editingId: l.id,
+        editDraft: {
+          name: l.name,
+          x: String(l.x),
+          y: String(l.y),
+          time: timeVal,
+          region: l.region || '',
+          area: l.area || '',
+          description: l.description || '',
+        }
+      });
+    });
+    document.querySelectorAll('.loc-del').forEach(b => b.onclick = () => {
+      const loc = state.locations.find(x=>x.id===b.dataset.id);
+      if (loc && loc._remote) {
+        addLog('Não é possível remover locais remotos', 'warn');
+        return;
+      }
+      const next = state.locations.filter(x=>x.id!==b.dataset.id);
+      const manual = next.filter(l => !l._remote);
+      store.setLocations(manual);
+      const remote = state.remoteLocations;
+      state.locations = [...remote, ...manual];
+      setState({locations: state.locations});
+      addLog(`Local removido: ${b.dataset.id}`, 'warn');
+    });
+    document.querySelectorAll('.edit-save').forEach(b => b.onclick = () => {
+      const xi = parseFloat(state.editDraft.x), yi = parseFloat(state.editDraft.y);
+      if (!state.editDraft.name.trim() || !inRange(xi) || !inRange(yi)) return;
+      let timeISO = null;
+      if (state.editDraft.time) {
+        const localDate = new Date(state.editDraft.time);
+        timeISO = localDate.toISOString();
+      }
+      const updated = state.locations.map(l => {
+        if (l.id === b.dataset.id) {
+          return {
+            ...l,
+            name: state.editDraft.name.trim(),
+            x: xi, y: yi,
+            time: timeISO,
+            region: state.editDraft.region || '',
+            area: state.editDraft.area || '',
+            description: state.editDraft.description || '',
+            _remote: false,
+          };
+        }
+        return l;
+      });
+      const manual = updated.filter(l => !l._remote);
+      store.setLocations(manual);
+      state.locations = updated;
+      setState({locations: updated, editingId: null});
+      addLog(`Local actualizado: ${state.editDraft.name}`, 'info');
+    });
+    document.querySelector('.edit-cancel')?.addEventListener('click', () => setState({editingId:null}));
+    document.querySelectorAll('.edit-name').forEach(el => el.oninput = e => state.editDraft.name = e.target.value);
+    document.querySelectorAll('.edit-x').forEach(el => el.oninput = e => state.editDraft.x = e.target.value);
+    document.querySelectorAll('.edit-y').forEach(el => el.oninput = e => state.editDraft.y = e.target.value);
+    document.querySelectorAll('.edit-time').forEach(el => el.oninput = e => state.editDraft.time = e.target.value);
+    document.querySelectorAll('.edit-region').forEach(el => el.oninput = e => state.editDraft.region = e.target.value);
+    document.querySelectorAll('.edit-area').forEach(el => el.oninput = e => state.editDraft.area = e.target.value);
+    document.querySelectorAll('.edit-description').forEach(el => el.oninput = e => state.editDraft.description = e.target.value);
+  }
+  if (state.tab==='history'){
+    document.getElementById('hist-clear')?.addEventListener('click', () => {
+      store.setHistory([]); setState({history:[]});
+      addLog('Histórico limpo', 'warn');
+    });
+  }
+}
+
+// ==========================================
+//  SHORTCUTS
+// ==========================================
+function handleShortcuts(e) {
+  if (e.ctrlKey && e.key >= '1' && e.key <= '5') {
+    e.preventDefault();
+    const idx = parseInt(e.key) - 1;
+    if (idx < TABS.length) {
+      setState({tab: TABS[idx].id});
+      addLog(`Navegação rápida: ${TABS[idx].label}`, 'info');
+    }
+  }
+  if (e.key === 'Enter' && state.tab === 'encrypt') {
+    e.preventDefault();
+    document.getElementById('enc-generate')?.click();
+  }
+  if (e.key === 'Enter' && state.tab === 'decrypt') {
+    e.preventDefault();
+    document.getElementById('dec-run')?.click();
+  }
+  if (e.ctrlKey && e.key === 'c' && state.tab === 'encrypt' && state.enc.code) {
+    e.preventDefault();
+    document.getElementById('enc-copy')?.click();
+  }
+  if (e.ctrlKey && e.key === 'f' && state.tab === 'locations') {
+    e.preventDefault();
+    document.getElementById('searchInput')?.focus();
+  }
+}
+
+// ==========================================
+//  PROGRESS SIMULATION
+// ==========================================
+function simulateProgress(duration, callback) {
+  let start = Date.now();
+  let elapsed = 0;
+  state.progress = 0;
+  state.elapsed = 0;
+  const interval = setInterval(() => {
+    const now = Date.now();
+    elapsed = (now - start) / 1000;
+    state.elapsed = Math.min(Math.round(elapsed * 10) / 10, duration);
+    state.progress = Math.min((elapsed / duration) * 100, 100);
+    if (state.loading) {
+      const app = document.getElementById('app');
+      if (state.loadingType === 'encrypt') {
+        app.innerHTML = header('MÓDULO DE ENCRIPTAÇÃO','Converter coordenadas espaciais em cifra alfabética') + renderClock() + renderLoader('encrypt');
+      } else if (state.loadingType === 'decrypt') {
+        app.innerHTML = header('MÓDULO DE DESENCRIPTAÇÃO','Intercetar código e traduzir em coordenadas espaciais') + renderClock() + renderLoader('decrypt');
+      }
+    }
+    if (elapsed >= duration) {
+      clearInterval(interval);
+      state.loading = false;
+      state.progress = 0;
+      state.elapsed = 0;
+      callback();
+    }
+  }, 100);
+}
+
+// ==========================================
+//  ON GENERATE
+// ==========================================
+async function onGenerate(){
+  const e = state.enc;
+  const selectedLoc = state.locations.find(l => l.id === e.locId);
+  const activeX = e.mode === 'preset' ? selectedLoc?.x : parseFloat(e.x);
+  const activeY = e.mode === 'preset' ? selectedLoc?.y : parseFloat(e.y);
+
+  if (e.mode==='preset' && !selectedLoc) return setState({enc:{...e, error:'Selecione um local válido.'}});
+  if (!inRange(activeX) || !inRange(activeY)) return setState({enc:{...e, error:'Coordenadas fora dos limites (-10000 a 10000).'}});
+  const key = e.key.trim() || 'default';
+  if (!e.key.trim()) addLog('Chave vazia – a utilizar chave padrão', 'warn');
+
+  let targetISO = null;
+  if (e.targetTime) {
+    const localDate = new Date(e.targetTime);
+    targetISO = localDate.toISOString();
+  }
+
+  setState({ loading: true, loadingType: 'encrypt', progress: 0, elapsed: 0 });
+  addLog(`A encriptar coordenadas (${activeX}, ${activeY})...`, 'info');
+
+  simulateProgress(2.0, async () => {
+    try {
+      const code = await encryptCoord(activeX, activeY, key);
+      const nextHistory = [
+        { code, label: e.mode==='preset'?selectedLoc.name:'Manual', ts: Date.now(), targetTime: targetISO },
+        ...state.history
+      ].slice(0,40);
+      store.setHistory(nextHistory);
+      setState({ enc: {...e, code, error:''}, history: nextHistory, loading: false });
+      addLog(`Código gerado: ${code}`, 'info');
+      if (targetISO) addLog(`Data/hora alvo: ${formatBrasiliaFromISO(targetISO)}`, 'info');
+      setTimeout(() => {
+        document.getElementById('result-panel')?.scrollIntoView({behavior: 'smooth', block: 'start'});
+      }, 100);
+    } catch(err){
+      setState({ enc: {...e, error:err.message}, loading: false });
+      addLog(`Erro: ${err.message}`, 'err');
+    }
+  });
+}
+
+// ==========================================
+//  ON DECRYPT
+// ==========================================
+async function onDecrypt(){
+  const d = state.dec;
+  const key = d.key.trim() || 'default';
+  if (!d.key.trim()) addLog('Chave vazia – a utilizar chave padrão', 'warn');
+  setState({ loading: true, loadingType: 'decrypt', progress: 0, elapsed: 0 });
+  addLog(`A desencriptar código ${d.code}...`, 'info');
+
+  simulateProgress(2.0, async () => {
+    try {
+      const {x,y} = await decryptCode(d.code, key);
+      const match = state.locations.find(l => Math.abs(l.x-x)<0.5 && Math.abs(l.y-y)<0.5);
+      const histItem = state.history.find(h => h.code === d.code.trim().toUpperCase());
+      const targetTime = histItem ? histItem.targetTime : null;
+      setState({
+        dec: {...d, error:'', result: { x, y, match, targetTime }},
+        loading: false
+      });
+      addLog(`Coordenadas obtidas: X=${x.toFixed(1)}, Y=${y.toFixed(1)}`, 'info');
+      if (match) addLog(`Match com local: ${match.name}`, 'info');
+      if (targetTime) {
+        const cd = getCountdown(targetTime);
+        if (cd) addLog(`Contagem: ${cd.text}`, 'info');
+      }
+    } catch(err){
+      setState({ dec: {...d, error:err.message, result:null}, loading: false });
+      addLog(`Erro: ${err.message}`, 'err');
+    }
+  });
+}
+
+// ==========================================
+//  ON ADD LOCATION
+// ==========================================
+function onAddLocation(){
+  const f = state.locForm;
+  const xi = parseFloat(f.x), yi = parseFloat(f.y);
+  if (!f.name.trim()) return setState({locForm:{...f, error:'Identificação obrigatória.'}});
+  if (!inRange(xi) || !inRange(yi)) return setState({locForm:{...f, error:'Valores de X/Y inválidos.'}});
+  const id = 'l_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+  let timeISO = null;
+  if (f.time) {
+    const localDate = new Date(f.time);
+    timeISO = localDate.toISOString();
+  }
+  const newLoc = {
+    id,
+    name: f.name.trim(),
+    x: xi,
+    y: yi,
+    time: timeISO,
+    region: f.region || '',
+    area: f.area || '',
+    description: f.description || '',
+    _remote: false,
+  };
+  const next = [...state.locations, newLoc];
+  const manual = next.filter(l => !l._remote);
+  store.setLocations(manual);
+  state.locations = next;
+  setState({locations: next, locForm:{name:'',x:'',y:'',time:'',region:'',area:'',description:'',error:''}});
+  addLog(`Local adicionado: ${f.name} (${xi}, ${yi})${timeISO ? ' às '+formatBrasiliaFromISO(timeISO) : ''}`, 'info');
+}
+
+// ==========================================
+//  FULLSCREEN TOGGLE
+// ==========================================
+window.toggleFullscreen = function(btn) {
+  const container = btn.closest('.map-container');
+  container.classList.toggle('fullscreen');
+  if (container.classList.contains('fullscreen')) {
+    btn.innerHTML = '[X] FECHAR';
+    document.body.style.overflow = 'hidden';
+  } else {
+    btn.innerHTML = '[⛶ EXPANDIR]';
+    document.body.style.overflow = '';
+  }
+};
+
+// ==========================================
+//  SOUND TOGGLE
+// ==========================================
+document.getElementById('soundToggle').addEventListener('click', function() {
+  soundEnabled = !soundEnabled;
+  this.querySelector('.ico').textContent = soundEnabled ? '🔊' : '🔇';
+  if (soundEnabled) {
+    playBeep(700, 0.08, 0.07, 'sine');
+  }
+  addLog(`Som ${soundEnabled ? 'ativado' : 'desativado'}`, 'warn');
+});
+
+// ==========================================
+//  INICIALIZAÇÃO
+// ==========================================
+async function init() {
+  addLog('Sistema inicializado', 'info');
+  // Carregar locais manuais
+  const manualLocs = store.getLocations();
+  state.locations = manualLocs;
+  // Carregar remotos (com fallback)
+  await loadRemoteLocations();
+  // Renderizar (loadRemoteLocations já chama render, mas garantimos)
+  render();
+}
+
+init();
+</script>
+</body>
+</html>

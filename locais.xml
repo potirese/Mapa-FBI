@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<locations>
+  <location>
+    <id>l_sector_a</id>
+    <name>SECTOR_A</name>
+    <x>2450.5</x>
+    <y>-1875.3</y>
+    <region>Zona Norte</region>
+    <area>Grande São Paulo</area>
+    <description>Base de operações secundária</description>
+    <last_update>2026-08-14T15:30:00.000Z</last_update>
+    <tags>NORTE,URBANO</tags>
+  </location>
+  <!-- mais locais -->
+</locations>
