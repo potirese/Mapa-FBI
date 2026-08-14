@@ -1,15 +1,348 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <locations>
+
+  <!-- ==================== PALETO BAY ==================== -->
+
   <location>
-    <id>l_sector_a</id>
-    <name>SECTOR_A</name>
-    <x>2450.5</x>
-    <y>-1875.3</y>
-    <region>Zona Norte</region>
-    <area>Grande São Paulo</area>
-    <description>Base de operações secundária</description>
-    <last_update>2026-08-14T15:30:00.000Z</last_update>
-    <tags>NORTE,URBANO</tags>
+    <id>loc_paleto_001</id>
+    <name>Casa na Rua Duluoz</name>
+    <x>-115.42</x>
+    <y>6388.76</y>
+    <region>Paleto Bay</region>
+    <area>Rua Duluoz</area>
+    <description>Residência associada a um indivíduo anteriormente investigado por posse ilegal de armas. A propriedade foi mencionada em dois relatos distintos relacionados com movimentações de veículos durante a madrugada.</description>
+    <last_update>2026-08-14T00:12:00.000Z</last_update>
+    <tags>INTERESSE,RESIDENCIA,ARMAS,VIGILANCIA</tags>
   </location>
-  <!-- mais locais -->
+
+  <location>
+    <id>loc_paleto_002</id>
+    <name>Armazém Industrial Paleto</name>
+    <x>-83.71</x>
+    <y>6362.14</y>
+    <region>Paleto Bay</region>
+    <area>Zona Industrial</area>
+    <description>Armazém utilizado anteriormente como ponto de armazenamento de mercadoria. Foram registadas entradas e saídas de carrinhas sem identificação durante horários de pouca circulação.</description>
+    <last_update>2026-08-13T22:45:00.000Z</last_update>
+    <tags>ARMAZEM,SUSPEITO,VEICULOS,INVESTIGACAO</tags>
+  </location>
+
+  <location>
+    <id>loc_paleto_003</id>
+    <name>Beco junto à Great Ocean Highway</name>
+    <x>-154.36</x>
+    <y>6272.48</y>
+    <region>Paleto Bay</region>
+    <area>Próximo à Great Ocean Highway</area>
+    <description>Local identificado após várias denúncias de trocas de pequenos volumes entre indivíduos. Não existem câmaras públicas na zona, tornando o ponto de difícil monitorização.</description>
+    <last_update>2026-08-12T18:30:00.000Z</last_update>
+    <tags>OCORRENCIA,TROCAS,SUSPEITA,BAIXA_VISIBILIDADE</tags>
+  </location>
+
+  <!-- ==================== GRAPESEED ==================== -->
+
+  <location>
+    <id>loc_grape_001</id>
+    <name>Casa Rural Grapeseed</name>
+    <x>2447.81</x>
+    <y>4976.32</y>
+    <region>Grapeseed</region>
+    <area>Próximo à Seaview Road</area>
+    <description>Propriedade rural frequentemente utilizada por um grupo de indivíduos já identificados em ocorrências relacionadas com transporte clandestino de mercadorias.</description>
+    <last_update>2026-08-14T00:05:00.000Z</last_update>
+    <tags>RURAL,INTERESSE,TRANSPORTE,SUSPEITOS</tags>
+  </location>
+
+  <location>
+    <id>loc_grape_002</id>
+    <name>Armazém da Fazenda</name>
+    <x>2534.26</x>
+    <y>4668.71</y>
+    <region>Grapeseed</region>
+    <area>Zona Agrícola</area>
+    <description>Estrutura agrícola aparentemente abandonada. Informações de campo indicam utilização ocasional durante a noite para reuniões entre indivíduos não residentes na região.</description>
+    <last_update>2026-08-11T23:10:00.000Z</last_update>
+    <tags>ABANDONADO,REUNIOES,SUSPEITO,RURAL</tags>
+  </location>
+
+  <location>
+    <id>loc_grape_003</id>
+    <name>Estrada de Terra Norte</name>
+    <x>2268.54</x>
+    <y>5168.27</y>
+    <region>Grapeseed</region>
+    <area>Próximo às plantações</area>
+    <description>Ponto isolado utilizado como possível rota alternativa para evitar as principais vias da região. Foram encontrados vestígios de passagem recente de vários veículos.</description>
+    <last_update>2026-08-10T20:40:00.000Z</last_update>
+    <tags>ROTA,VEICULOS,ISOLADO,VIGILANCIA</tags>
+  </location>
+
+  <!-- ==================== SANDY SHORES ==================== -->
+
+  <location>
+    <id>loc_sandy_001</id>
+    <name>Residência Sandy Shores</name>
+    <x>1384.27</x>
+    <y>3606.92</y>
+    <region>Sandy Shores</region>
+    <area>Rua do Branco Central</area>
+    <description>Residência colocada no banco de dados após sucessivas ocorrências de perturbação e denúncias de movimentação suspeita de pessoas durante a madrugada.</description>
+    <last_update>2026-08-14T00:32:00.000Z</last_update>
+    <tags>RESIDENCIA,OCORRENCIAS,SUSPEITA,PRIORIDADE_MEDIA</tags>
+  </location>
+
+  <location>
+    <id>loc_sandy_002</id>
+    <name>Parque de Reboques Sandy</name>
+    <x>1197.62</x>
+    <y>2657.84</y>
+    <region>Sandy Shores</region>
+    <area>Próximo à Marina</area>
+    <description>Parque de veículos com histórico de utilização por pessoas envolvidas em ocorrências de furto e alteração de matrículas. Área considerada relevante para futuras operações de vigilância.</description>
+    <last_update>2026-08-13T19:20:00.000Z</last_update>
+    <tags>VEICULOS,FURTO,MATRICULAS,VIGILANCIA</tags>
+  </location>
+
+  <location>
+    <id>loc_sandy_003</id>
+    <name>Casa Abandonada Sandy</name>
+    <x>1531.18</x>
+    <y>3778.42</y>
+    <region>Sandy Shores</region>
+    <area>Zona Residencial Norte</area>
+    <description>Imóvel sem ocupação aparente. Foi referenciado por informadores como possível local de encontro de indivíduos associados ao comércio ilegal na região.</description>
+    <last_update>2026-08-12T21:05:00.000Z</last_update>
+    <tags>ABANDONADO,INFORMADOR,TRAFICO,SUSPEITO</tags>
+  </location>
+
+  <!-- ==================== PORTO ==================== -->
+
+  <location>
+    <id>loc_porto_001</id>
+    <name>Armazém Portuário 07</name>
+    <x>915.34</x>
+    <y>-2985.71</y>
+    <region>Porto</region>
+    <area>Zona Portuária</area>
+    <description>Armazém identificado durante investigação de entrada irregular de mercadoria. Registos indicam movimentação fora do horário comercial em várias noites consecutivas.</description>
+    <last_update>2026-08-14T00:44:00.000Z</last_update>
+    <tags>PORTO,ARMAZEM,MERCADORIA,INVESTIGACAO</tags>
+  </location>
+
+  <location>
+    <id>loc_porto_002</id>
+    <name>Cais Secundário</name>
+    <x>823.46</x>
+    <y>-3194.82</y>
+    <region>Porto</region>
+    <area>Próximo ao Cais Sul</area>
+    <description>Ponto de interesse devido a relatos sobre transferências de caixas entre embarcações pequenas e veículos terrestres durante a madrugada.</description>
+    <last_update>2026-08-13T23:25:00.000Z</last_update>
+    <tags>CAIS,EMBARCACOES,MERCADORIA,SUSPEITA</tags>
+  </location>
+
+  <location>
+    <id>loc_porto_003</id>
+    <name>Oficina do Porto</name>
+    <x>1027.83</x>
+    <y>-3135.49</y>
+    <region>Porto</region>
+    <area>Rua Industrial</area>
+    <description>Oficina mencionada em investigação sobre veículos utilizados em crimes. Foram identificadas alterações recorrentes em veículos pouco tempo após determinadas ocorrências.</description>
+    <last_update>2026-08-12T16:40:00.000Z</last_update>
+    <tags>OFICINA,VEICULOS,INVESTIGACAO,INTERESSE</tags>
+  </location>
+
+  <!-- ==================== DOCAS ==================== -->
+
+  <location>
+    <id>loc_docas_001</id>
+    <name>Docas Norte</name>
+    <x>835.21</x>
+    <y>-2478.63</y>
+    <region>Docas</region>
+    <area>Docas Norte</area>
+    <description>Área frequentemente associada a ocorrências relacionadas com contrabando e circulação de veículos pesados. Ponto considerado relevante para operações de inteligência.</description>
+    <last_update>2026-08-14T00:50:00.000Z</last_update>
+    <tags>DOCAS,CONTRABANDO,VEICULOS,PONTO_CRITICO</tags>
+  </location>
+
+  <location>
+    <id>loc_docas_002</id>
+    <name>Contentores 14B</name>
+    <x>772.18</x>
+    <y>-2675.42</y>
+    <region>Docas</region>
+    <area>Terminal de Contentores</area>
+    <description>Conjunto de contentores mencionado em relatório de inteligência devido à utilização irregular de documentação de carga.</description>
+    <last_update>2026-08-13T18:15:00.000Z</last_update>
+    <tags>CONTENTORES,CARGA,DOCUMENTACAO,INTELIGENCIA</tags>
+  </location>
+
+  <location>
+    <id>loc_docas_003</id>
+    <name>Estacionamento de Camiões</name>
+    <x>641.92</x>
+    <y>-2881.33</y>
+    <region>Docas</region>
+    <area>Zona Logística</area>
+    <description>Local de estacionamento utilizado por transportadoras. Uma investigação revelou que determinados veículos permaneciam no local durante períodos incompatíveis com os horários declarados.</description>
+    <last_update>2026-08-11T22:20:00.000Z</last_update>
+    <tags>CAMIOES,LOGISTICA,INVESTIGACAO,VEICULOS</tags>
+  </location>
+
+  <!-- ==================== AEROPORTO ==================== -->
+
+  <location>
+    <id>loc_airport_001</id>
+    <name>Hangar Secundário 3</name>
+    <x>-1189.52</x>
+    <y>-3002.61</y>
+    <region>Aeroporto Centro</region>
+    <area>Zona de Hangares</area>
+    <description>Hangar incluído no banco de dados após denúncia sobre utilização irregular do espaço durante o período noturno. A propriedade está associada a uma empresa de aviação privada.</description>
+    <last_update>2026-08-14T00:18:00.000Z</last_update>
+    <tags>AEROPORTO,HANGAR,EMPRESA,INTERESSE</tags>
+  </location>
+
+  <location>
+    <id>loc_airport_002</id>
+    <name>Estacionamento Oeste</name>
+    <x>-1025.83</x>
+    <y>-2728.47</y>
+    <region>Aeroporto Centro</region>
+    <area>Estacionamento Oeste</area>
+    <description>Zona referenciada em várias ocorrências de furto de veículos. A concentração de ocorrências justificou a inclusão do local no sistema de inteligência.</description>
+    <last_update>2026-08-13T20:10:00.000Z</last_update>
+    <tags>AEROPORTO,FURTOS,VEICULOS,OCORRENCIAS</tags>
+  </location>
+
+  <location>
+    <id>loc_airport_003</id>
+    <name>Estrada de Serviço</name>
+    <x>-1284.41</x>
+    <y>-2951.73</y>
+    <region>Aeroporto Centro</region>
+    <area>Próximo à pista secundária</area>
+    <description>Via de acesso restrito utilizada por funcionários e veículos de serviço. Foi adicionada após relatos de circulação de veículos não autorizados.</description>
+    <last_update>2026-08-10T17:30:00.000Z</last_update>
+    <tags>ACESSO_RESTRITO,VEICULOS,SUSPEITA,AEROPORTO</tags>
+  </location>
+
+  <!-- ==================== CENTRO ==================== -->
+
+  <location>
+    <id>loc_centro_001</id>
+    <name>Apartamento do Centro</name>
+    <x>243.72</x>
+    <y>-1023.64</y>
+    <region>Centro</region>
+    <area>Rua Alta</area>
+    <description>Residência de pessoa de interesse numa investigação financeira. O indivíduo mantém ligação conhecida com outros alvos já registados no sistema.</description>
+    <last_update>2026-08-14T00:28:00.000Z</last_update>
+    <tags>CENTRO,RESIDENCIA,INTERESSE,FINANCEIRO</tags>
+  </location>
+
+  <location>
+    <id>loc_centro_002</id>
+    <name>Parque Subterrâneo</name>
+    <x>318.51</x>
+    <y>-721.38</y>
+    <region>Centro</region>
+    <area>Próximo à Avenida Central</area>
+    <description>Parque subterrâneo associado a uma ocorrência de troca de veículos. O local apresenta baixa visibilidade e vários acessos alternativos.</description>
+    <last_update>2026-08-12T19:45:00.000Z</last_update>
+    <tags>ESTACIONAMENTO,VEICULOS,OCORRENCIA,BAIXA_VISIBILIDADE</tags>
+  </location>
+
+  <!-- ==================== ZONA SUL ==================== -->
+
+  <location>
+    <id>loc_sul_001</id>
+    <name>Complexo Residencial Sul</name>
+    <x>-67.42</x>
+    <y>-1463.87</y>
+    <region>Zona Sul</region>
+    <area>Rua do Mercado</area>
+    <description>Conjunto habitacional com histórico elevado de chamadas relacionadas com confrontos, tráfico e posse ilegal de armas.</description>
+    <last_update>2026-08-13T23:55:00.000Z</last_update>
+    <tags>FAVELA,TRAFICO,ARMAS,OCORRENCIAS</tags>
+  </location>
+
+  <location>
+    <id>loc_sul_002</id>
+    <name>Oficina da Rua Sul</name>
+    <x>-220.61</x>
+    <y>-1348.25</y>
+    <region>Zona Sul</region>
+    <area>Rua Industrial Sul</area>
+    <description>Oficina mencionada por testemunhas como ponto utilizado para esconder veículos após ocorrências criminais.</description>
+    <last_update>2026-08-11T21:35:00.000Z</last_update>
+    <tags>OFICINA,VEICULOS,ESCONDERIJO,SUSPEITO</tags>
+  </location>
+
+  <!-- ==================== VINEWOOD ==================== -->
+
+  <location>
+    <id>loc_vinewood_001</id>
+    <name>Moradia Vinewood Hills</name>
+    <x>-562.83</x>
+    <y>401.27</y>
+    <region>Vinewood</region>
+    <area>Vinewood Hills</area>
+    <description>Residência de elevado valor pertencente a empresário citado numa investigação sobre lavagem de dinheiro. O imóvel permanece sob interesse analítico.</description>
+    <last_update>2026-08-14T00:02:00.000Z</last_update>
+    <tags>VINEWOOD,EMPRESARIO,FINANCEIRO,INTERESSE</tags>
+  </location>
+
+  <location>
+    <id>loc_vinewood_002</id>
+    <name>Garagem Privada</name>
+    <x>-721.46</x>
+    <y>312.84</y>
+    <region>Vinewood</region>
+    <area>Próximo à Vinewood Boulevard</area>
+    <description>Garagem privada associada a diversos veículos de luxo. O local foi incluído devido à suspeita de utilização de veículos com matrículas temporárias.</description>
+    <last_update>2026-08-09T18:25:00.000Z</last_update>
+    <tags>GARAGEM,VEICULOS,LUXO,MATRICULAS</tags>
+  </location>
+
+  <!-- ==================== OUTROS PONTOS ==================== -->
+
+  <location>
+    <id>loc_route_001</id>
+    <name>Passagem de Montanha</name>
+    <x>-1468.32</x>
+    <y>4382.71</y>
+    <region>Montanhas</region>
+    <area>Estrada Secundária</area>
+    <description>Estrada pouco movimentada utilizada como possível rota de fuga. A localização foi adicionada após testemunhos sobre veículos a circular em alta velocidade durante a noite.</description>
+    <last_update>2026-08-08T23:40:00.000Z</last_update>
+    <tags>ROTA_DE_FUGA,MONTANHA,VEICULOS,VIGILANCIA</tags>
+  </location>
+
+  <location>
+    <id>loc_route_002</id>
+    <name>Cabana Florestal</name>
+    <x>-842.17</x>
+    <y>5452.38</y>
+    <region>Zona Florestal</region>
+    <area>Próximo à estrada norte</area>
+    <description>Cabana isolada sem presença regular de moradores. Foi referenciada em informação de inteligência como possível ponto de armazenamento temporário.</description>
+    <last_update>2026-08-07T20:15:00.000Z</last_update>
+    <tags>FLORESTA,CABANA,ARMAZENAMENTO,INTELIGENCIA</tags>
+  </location>
+
+  <location>
+    <id>loc_route_003</id>
+    <name>Posto de Combustível Abandonado</name>
+    <x>1684.27</x>
+    <y>642.81</y>
+    <region>Estradas Interurbanas</region>
+    <area>Próximo à Route 68</area>
+    <description>Posto encerrado há vários anos. O edifício e as estruturas adjacentes são ocasionalmente referenciados em denúncias sobre reuniões clandestinas.</description>
+    <last_update>2026-08-06T22:50:00.000Z</last_update>
+    <tags>ABANDONADO,REUNIOES,INTERESTE,ROUTE68</tags>
+  </location>
+
 </locations>
