@@ -6,7 +6,7 @@
 <title>SYS_SECURE // CANAL DE LOCALIZAÇÕES GTA</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
-  /* ===== ESTILOS (com melhorias para o novo layout) ===== */
+  /* ===== ESTILOS GERAIS (mantidos) ===== */
   :root {
     --bg: #090a0f;
     --panel: #0e1117;
@@ -160,41 +160,252 @@
   .quick { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px; }
   .quickbtn { display: flex; align-items: center; gap: 10px; border: 1px solid var(--border); background: var(--panel); padding: 15px; cursor: pointer; font-size: 13px; color: var(--text); text-align: left; font-family: var(--font-mono); transition: 0.15s; }
   .quickbtn:hover { border-color: var(--accent); background: var(--panel-hover); color: var(--accent); }
-  .list-item { padding: 12px 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
-  .list-item:last-child { border-bottom: none; padding-bottom: 0; }
-  .loc-name { font-size: 13px; color: var(--header-text); }
-  .loc-coords { font-size: 11px; color: var(--muted); margin-top: 2px; }
-  .loc-detail { font-size: 11px; color: var(--muted); margin-top: 2px; }
-  .loc-tags { font-size: 10px; color: var(--accent); margin-top: 2px; }
   .iconbtn { width: 32px; height: 32px; border: 1px solid var(--border); background: #000; cursor: pointer; color: var(--text); display: inline-flex; align-items: center; justify-content: center; font-family: var(--font-mono); transition: 0.1s; }
   .iconbtn:hover { border-color: var(--accent); color: var(--accent); background: var(--panel-hover); }
   .iconbtn.danger:hover { border-color: var(--danger); color: var(--danger); background: rgba(255,85,85,0.1); }
   .iconbtn.expand-btn:hover { border-color: #3b82f6; color: #3b82f6; background: rgba(59,130,246,0.1); }
-  .loc-expanded-details {
-    padding: 15px 10px;
-    margin: 10px 0 5px 0;
-    background: #000;
-    border: 1px solid var(--border-bright);
-    width: 100%;
-    border-radius: 0;
+  .muted { color: var(--muted); font-size: 12px; }
+  .hint { font-size: 10px; color: var(--muted); margin-top: 10px; line-height: 1.4; }
+  .link { color: var(--danger); font-size: 11px; background: none; border: none; cursor: pointer; text-decoration: underline; font-family: var(--font-mono); }
+  .loader-overlay { border: 1px solid var(--border); background: #000; padding: 30px 20px; text-align: center; margin-top: 10px; }
+  .loader-overlay .spinner { display: inline-block; width: 30px; height: 30px; border: 2px solid var(--border); border-top: 2px solid var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 15px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loader-overlay .progress-bar { width: 100%; height: 4px; background: var(--border); margin: 15px 0; overflow: hidden; }
+  .loader-overlay .progress-bar .fill { height: 100%; width: 0%; background: var(--accent); transition: width 0.2s; }
+  .loader-overlay .timer { color: var(--accent); font-size: 14px; letter-spacing: 2px; }
+  .clock-display { font-size: 16px; color: var(--accent); background: #000; padding: 6px 14px; border: 1px solid var(--border); display: inline-block; margin-bottom: 15px; letter-spacing: 2px; }
+  .countdown { font-size: 14px; color: #ffaa00; background: #000; padding: 8px 14px; border: 1px solid #ffaa00; display: inline-block; margin: 10px 0; letter-spacing: 1px; }
+  .countdown.positive { color: var(--accent); border-color: var(--accent); }
+  .countdown.negative { color: var(--danger); border-color: var(--danger); }
+  .map-container { border: 1px solid var(--border); background: #000; display: flex; flex-direction: column; margin-top: 20px; }
+  .map-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #07090e; border-bottom: 1px solid var(--border); }
+  .map-title { color: var(--muted); font-size: 11px; }
+  .btn-expand { background: #000; border: 1px solid var(--border); color: var(--text); padding: 4px 10px; cursor: pointer; font-size: 11px; font-family: var(--font-mono); transition: 0.1s; }
+  .btn-expand:hover { border-color: var(--accent); color: var(--accent); }
+  .map-container .map-frame { width: 100%; height: 400px; border: none; background: #000; }
+  .map-container.fullscreen { position: fixed; top:0;left:0;width:100vw;height:100vh;z-index:10000;border:none; }
+  .map-container.fullscreen .map-frame { height: calc(100vh - 35px); }
+
+  /* ===== NOVOS ESTILOS PARA A PÁGINA LOCAIS (INTELIGÊNCIA) ===== */
+  .intel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 15px;
   }
-  .loc-expanded-details .detail-row { display: flex; gap: 10px; margin-bottom: 6px; font-size: 12px; }
-  .loc-expanded-details .detail-row .label { color: var(--muted); min-width: 80px; }
-  .loc-expanded-details .detail-row .value { color: var(--text); word-break: break-word; }
-  .loc-expanded-details .map-container { margin-top: 10px; border: 1px solid var(--border); }
-  .loc-expanded-details .map-container .map-frame { height: 250px; }
+  .intel-header h1 {
+    border-left: 3px solid var(--accent);
+    padding-left: 10px;
+    margin: 0;
+  }
+  .intel-header .subtitle {
+    margin: 0;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .intel-stats {
+    display: flex;
+    gap: 20px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .intel-stats span { display: flex; align-items: center; gap: 5px; }
+  .intel-stats .num { color: var(--accent); font-size: 16px; font-weight: bold; }
 
-  .search-box { margin-bottom: 15px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-  .search-box input { flex: 1; background: #000; border: 1px solid var(--border); padding: 12px 15px; font-size: 15px; color: var(--accent); font-family: var(--font-mono); transition: 0.15s; min-width: 150px; }
-  .search-box input:focus { outline: none; border-color: var(--accent); box-shadow: inset 0 0 5px var(--accent-dim), 0 0 15px var(--accent-dim); }
-  .search-box .search-count { font-size: 12px; color: var(--muted); white-space: nowrap; }
-  .search-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  /* Barra de pesquisa estilo CIA */
+  .search-intel {
+    background: #000;
+    border: 1px solid var(--border);
+    padding: 5px 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    transition: 0.2s;
+  }
+  .search-intel:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 20px var(--accent-dim), inset 0 0 10px var(--accent-dim);
+  }
+  .search-intel .prompt {
+    color: var(--accent);
+    font-size: 13px;
+    opacity: 0.7;
+    user-select: none;
+  }
+  .search-intel input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 10px 0;
+    font-size: 15px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .search-intel input:focus { outline: none; }
+  .search-intel input::placeholder {
+    color: var(--muted);
+    opacity: 0.5;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .search-intel .result-count {
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+    padding: 0 5px;
+  }
 
+  .search-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  /* Cards de locais (dossiês) */
+  .location-card {
+    background: #000;
+    border: 1px solid var(--border);
+    margin-bottom: 15px;
+    transition: 0.2s;
+    position: relative;
+  }
+  .location-card:hover {
+    border-color: var(--border-bright);
+    background: var(--panel);
+  }
+  .location-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid transparent;
+    transition: 0.15s;
+  }
+  .location-card .card-header:hover {
+    background: var(--panel-hover);
+  }
+  .location-card .card-header .primary {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+  .location-card .card-header .primary .name {
+    font-size: 14px;
+    color: var(--header-text);
+    letter-spacing: 0.5px;
+  }
+  .location-card .card-header .primary .coords {
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .location-card .card-header .primary .badge {
+    font-size: 9px;
+    padding: 2px 8px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .location-card .card-header .primary .badge.remote {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .location-card .card-header .actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .location-card .card-header .actions .iconbtn {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+  .location-card .card-body {
+    display: none;
+    padding: 15px;
+    border-top: 1px solid var(--border);
+    background: #07090e;
+  }
+  .location-card .card-body.open {
+    display: block;
+    animation: fadeSlide 0.25s ease-out;
+  }
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .location-card .card-body .details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 30px;
+    margin-bottom: 15px;
+    font-size: 12px;
+  }
+  .location-card .card-body .details-grid .item {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+  }
+  .location-card .card-body .details-grid .item .label {
+    color: var(--muted);
+    min-width: 70px;
+    font-size: 10px;
+  }
+  .location-card .card-body .details-grid .item .value {
+    color: var(--text);
+    word-break: break-word;
+  }
+  .location-card .card-body .details-grid .item .value.accent {
+    color: var(--accent);
+  }
+  /* Mapa grande e centralizado */
+  .location-card .card-body .map-container {
+    margin: 10px 0 0 0;
+    border: 1px solid var(--border);
+    width: 100%;
+  }
+  .location-card .card-body .map-container .map-frame {
+    height: 300px;
+    width: 100%;
+    display: block;
+  }
+  .location-card .card-body .map-container .map-header .btn-expand {
+    font-size: 10px;
+  }
+
+  .location-card .card-body .map-container.fullscreen .map-frame {
+    height: calc(100vh - 35px);
+  }
+
+  @media (max-width: 700px) {
+    .location-card .card-body .details-grid {
+      grid-template-columns: 1fr;
+    }
+    .search-intel {
+      flex-wrap: wrap;
+    }
+    .search-intel input {
+      width: 100%;
+    }
+    .intel-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+
+  /* Formulário de adição (estilo colapsável) */
   .add-form-panel {
     border: 1px solid var(--border);
-    background: var(--panel);
+    background: #000;
+    padding: 20px;
     margin-bottom: 20px;
-    padding: 15px 20px;
     display: none;
     animation: slideDown 0.3s ease-out;
   }
@@ -203,9 +414,7 @@
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
   }
-  .add-form-panel .field { margin-bottom: 10px; }
-
-  @media (max-width:700px){ .top-bar { flex-direction: column; align-items: stretch; padding: 15px; } .nav-tabs { justify-content: center; } .grid2, .grid3 { grid-template-columns: 1fr; } .quick { grid-template-columns: 1fr; } .dash-grid { grid-template-columns: 1fr; } .search-box { flex-wrap: wrap; } }
+  .add-form-panel .field { margin-bottom: 12px; }
 </style>
 </head>
 <body>
@@ -240,7 +449,7 @@
 //  CONFIGURAÇÃO
 // ==========================================
 const CONFIG = {
-  LOCATIONS_XML_URL: 'locais.xml',
+  LOCATIONS_XML_URL: 'locations.xml',
   ENCRYPTION_KEY: 'SYS_SECURE_XML',
 };
 
@@ -255,7 +464,7 @@ const DEFAULT_LOCATIONS = [
     y: -1875.3,
     region: 'Zona Norte',
     area: 'Grande São Paulo',
-    description: 'Base de operações secundária',
+    description: 'Base de operações secundária. Local com alto tráfego de veículos militares.',
     time: new Date().toISOString(),
     tags: 'NORTE,URBANO'
   },
@@ -266,7 +475,7 @@ const DEFAULT_LOCATIONS = [
     y: 3400.0,
     region: 'Centro',
     area: 'Grande São Paulo',
-    description: 'Alvo principal',
+    description: 'Alvo principal. Edifício de 20 andares com segurança reforçada.',
     time: new Date().toISOString(),
     tags: 'CENTRO,ALVO'
   },
@@ -277,7 +486,7 @@ const DEFAULT_LOCATIONS = [
     y: -2300.0,
     region: 'Zona Sul',
     area: 'Grande São Paulo',
-    description: 'Ponto de fuga',
+    description: 'Ponto de fuga. Pista principal com acesso restrito.',
     time: new Date().toISOString(),
     tags: 'SUL,LOGISTICA'
   }
@@ -445,7 +654,7 @@ const store = {
 //  STATE
 // ==========================================
 let state = {
-  tab: 'dashboard',
+  tab: 'locations',
   locations: [],
   remoteLocations: [],
   history: store.getHistory(),
@@ -454,7 +663,7 @@ let state = {
   locForm: { name:'', x:'', y:'', region:'', area:'', description:'', time:'', error:'' },
   editingId: null,
   editDraft: {},
-  expandedId: null, // ID do local expandido
+  expandedId: null,
   showAddForm: false,
   loading: false,
   loadingType: '',
@@ -670,7 +879,7 @@ function exportLocationsXML() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'locais.xml';
+  a.download = 'locations.xml';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -689,11 +898,10 @@ function toggleExpand(id) {
     setState({ expandedId: null });
   } else {
     setState({ expandedId: id });
-    // Scroll para o local expandido
     setTimeout(() => {
-      const el = document.querySelector(`[data-expand-target="${id}"]`);
+      const el = document.querySelector(`[data-card-id="${id}"]`);
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 100);
+    }, 150);
   }
 }
 
@@ -907,7 +1115,7 @@ function renderDecrypt(){
 }
 
 // ==========================================
-//  LOCATIONS (com foco na pesquisa, expandir e mapa)
+//  LOCATIONS (versão "intelligence")
 // ==========================================
 function renderLocations(){
   const f = state.locForm;
@@ -944,100 +1152,104 @@ function renderLocations(){
     </div>
   `;
 
-  // Lista de locais
-  let listHtml = filtered.map(l => {
+  // Cards de locais (dossiês)
+  let cardsHtml = filtered.map(l => {
     const isEditing = state.editingId === l.id;
     const isExpanded = state.expandedId === l.id;
 
-    let mainRow = '';
+    // Se estiver a editar, usar o layout antigo de edição (simplificado)
     if (isEditing) {
-      mainRow = `
-        <div class="list-item" style="display:grid;grid-template-columns:1fr 90px 90px 200px auto;gap:10px;align-items:center;padding:10px 0;">
-          <input class="edit-name" data-id="${l.id}" value="${state.editDraft.name}">
-          <input class="edit-x" data-id="${l.id}" type="number" step="0.1" value="${state.editDraft.x}">
-          <input class="edit-y" data-id="${l.id}" type="number" step="0.1" value="${state.editDraft.y}">
-          <input class="edit-time" data-id="${l.id}" type="datetime-local" value="${state.editDraft.time||''}">
-          <div class="row">
-            <button class="iconbtn edit-save" data-id="${l.id}" style="color:var(--accent);">[✓]</button>
-            <button class="iconbtn edit-cancel">[X]</button>
+      return `
+        <div class="location-card" style="padding:15px; border:1px solid var(--accent);">
+          <div style="display:grid;grid-template-columns:1fr 90px 90px 200px auto;gap:10px;align-items:center;padding:10px 0;">
+            <input class="edit-name" data-id="${l.id}" value="${state.editDraft.name}">
+            <input class="edit-x" data-id="${l.id}" type="number" step="0.1" value="${state.editDraft.x}">
+            <input class="edit-y" data-id="${l.id}" type="number" step="0.1" value="${state.editDraft.y}">
+            <input class="edit-time" data-id="${l.id}" type="datetime-local" value="${state.editDraft.time||''}">
+            <div class="row">
+              <button class="iconbtn edit-save" data-id="${l.id}" style="color:var(--accent);">[✓]</button>
+              <button class="iconbtn edit-cancel">[X]</button>
+            </div>
           </div>
-        </div>
-        <div class="grid2" style="padding:0 0 10px 0;">
-          <input class="edit-region" data-id="${l.id}" value="${state.editDraft.region||''}" placeholder="Região local">
-          <input class="edit-area" data-id="${l.id}" value="${state.editDraft.area||''}" placeholder="Região abrangente">
-          <textarea class="edit-description" data-id="${l.id}" rows="2" placeholder="Descrição">${state.editDraft.description||''}</textarea>
-        </div>
-      `;
-    } else {
-      mainRow = `
-        <div class="list-item">
-          <div>
-            <div class="loc-name">${l.name}</div>
-            <div class="loc-coords">X: ${l.x} | Y: ${l.y}</div>
-            ${l.region ? `<div class="loc-detail">📍 ${l.region}${l.area ? ' · '+l.area : ''}</div>` : ''}
-            ${l.description ? `<div class="loc-detail">📝 ${l.description}</div>` : ''}
-            ${l.time ? `<div class="loc-time">⏱ ${formatBrasiliaFromISO(l.time)}</div>` : ''}
-            ${l.tags ? `<div class="loc-tags">🏷️ ${l.tags}</div>` : ''}
-            ${l._remote ? '<span style="color:var(--muted);font-size:9px;">[REMOTO]</span>' : ''}
-          </div>
-          <div class="row">
-            <button class="iconbtn expand-btn loc-expand" data-id="${l.id}" title="Expandir detalhes">[⛶]</button>
-            <button class="iconbtn loc-edit" data-id="${l.id}" title="Editar">[✎]</button>
-            ${!l._remote ? `<button class="iconbtn danger loc-del" data-id="${l.id}" title="Remover">[🗑]</button>` : ''}
+          <div class="grid2" style="padding:0 0 10px 0;">
+            <input class="edit-region" data-id="${l.id}" value="${state.editDraft.region||''}" placeholder="Região local">
+            <input class="edit-area" data-id="${l.id}" value="${state.editDraft.area||''}" placeholder="Região abrangente">
+            <textarea class="edit-description" data-id="${l.id}" rows="2" placeholder="Descrição">${state.editDraft.description||''}</textarea>
           </div>
         </div>
       `;
     }
 
-    let expandRow = '';
-    if (isExpanded && !isEditing) {
-      expandRow = `
-        <div class="loc-expanded-details" data-expand-target="${l.id}">
-          <div class="detail-row"><span class="label">IDENTIFICAÇÃO</span><span class="value">${l.name}</span></div>
-          <div class="detail-row"><span class="label">COORDENADAS</span><span class="value">X: ${l.x} | Y: ${l.y}</span></div>
-          ${l.region ? `<div class="detail-row"><span class="label">REGIÃO LOCAL</span><span class="value">${l.region}</span></div>` : ''}
-          ${l.area ? `<div class="detail-row"><span class="label">REGIÃO ABRANGENTE</span><span class="value">${l.area}</span></div>` : ''}
-          ${l.description ? `<div class="detail-row"><span class="label">DESCRIÇÃO</span><span class="value">${l.description}</span></div>` : ''}
-          ${l.tags ? `<div class="detail-row"><span class="label">TAGS</span><span class="value">${l.tags}</span></div>` : ''}
-          ${l.time ? `<div class="detail-row"><span class="label">ÚLTIMA ATUALIZAÇÃO</span><span class="value">${formatBrasiliaFromISO(l.time)}</span></div>` : ''}
-          <div class="detail-row"><span class="label">ORIGEM</span><span class="value">${l._remote ? 'REMOTO' : 'MANUAL'}</span></div>
-          <div class="map-container" style="margin-top:10px;">
+    // Card normal
+    const isRemote = l._remote ? true : false;
+    return `
+      <div class="location-card" data-card-id="${l.id}">
+        <div class="card-header" onclick="toggleExpand('${l.id}')">
+          <div class="primary">
+            <span class="name">${l.name}</span>
+            <span class="coords">X: ${l.x} | Y: ${l.y}</span>
+            ${isRemote ? '<span class="badge remote">REMOTO</span>' : '<span class="badge">MANUAL</span>'}
+            ${l.region ? `<span class="badge" style="color:var(--muted);">${l.region}</span>` : ''}
+          </div>
+          <div class="actions">
+            <button class="iconbtn expand-btn" onclick="event.stopPropagation(); toggleExpand('${l.id}')" title="Expandir">${isExpanded ? '[−]' : '[⛶]'}</button>
+            <button class="iconbtn loc-edit" data-id="${l.id}" onclick="event.stopPropagation()" title="Editar">[✎]</button>
+            ${!isRemote ? `<button class="iconbtn danger loc-del" data-id="${l.id}" onclick="event.stopPropagation()" title="Remover">[🗑]</button>` : ''}
+          </div>
+        </div>
+        <div class="card-body ${isExpanded ? 'open' : ''}">
+          <div class="details-grid">
+            <div class="item"><span class="label">IDENTIFICAÇÃO</span><span class="value accent">${l.name}</span></div>
+            <div class="item"><span class="label">COORDENADAS</span><span class="value">X: ${l.x} | Y: ${l.y}</span></div>
+            ${l.region ? `<div class="item"><span class="label">REGIÃO LOCAL</span><span class="value">${l.region}</span></div>` : ''}
+            ${l.area ? `<div class="item"><span class="label">REGIÃO ABRANGENTE</span><span class="value">${l.area}</span></div>` : ''}
+            ${l.tags ? `<div class="item"><span class="label">TAGS</span><span class="value">${l.tags}</span></div>` : ''}
+            ${l.time ? `<div class="item"><span class="label">ÚLTIMA ATUALIZAÇÃO</span><span class="value">${formatBrasiliaFromISO(l.time)}</span></div>` : ''}
+            <div class="item"><span class="label">ORIGEM</span><span class="value">${isRemote ? 'REMOTO (XML)' : 'MANUAL'}</span></div>
+          </div>
+          ${l.description ? `<div style="margin-bottom:15px;font-size:12px;color:var(--text);border-top:1px solid var(--border);padding-top:10px;"><span class="label" style="color:var(--muted);">DESCRIÇÃO</span><br>${l.description}</div>` : ''}
+          <div class="map-container">
             <div class="map-header">
-              <span class="map-title">&gt; LOCALIZAÇÃO NO MAPA</span>
+              <span class="map-title">&gt; LOCALIZAÇÃO EXATA</span>
               <button class="btn-expand" onclick="window.open('${forgeUrl(l.x,l.y,3)}', '_blank')">[ABRIR EXTERNO]</button>
             </div>
-            <iframe class="map-frame" src="${forgeUrl(l.x,l.y,3)}" allowfullscreen style="height:250px;"></iframe>
+            <iframe class="map-frame" src="${forgeUrl(l.x,l.y,3)}" allowfullscreen></iframe>
           </div>
           <button class="btn btn-outline" style="margin-top:10px;" onclick="setState({expandedId:null})">FECHAR DETALHES</button>
         </div>
-      `;
-    }
-
-    return `<div>${mainRow}${expandRow}</div>`;
+      </div>
+    `;
   }).join('');
 
   return `
     ${header('BASE DE DADOS DE LOCAIS','Gestão de coordenadas e informação dos locais')}
-    <div class="panel">
-      <div class="panel-head"><h2>[PESQUISA E OPERAÇÕES]</h2></div>
-      <div class="panel-body">
-        <div class="search-box">
-          <input id="searchInput" type="text" value="${query}" placeholder="Pesquisar por nome, região, coordenadas...">
-          <span class="search-count">${filtered.length} / ${state.locations.length}</span>
-          <div class="search-actions">
-            <button id="toggleAddBtn" class="btn btn-add">➕ ADICIONAR LOCAL</button>
-            <button id="exportXmlBtn" class="btn btn-outline">⬇ XML</button>
-            <button id="refreshXmlBtn" class="btn btn-outline">⟳ XML</button>
-          </div>
-        </div>
-        ${addFormHtml}
+    <div class="intel-header">
+      <div>
+        <h1>INTEL_DOSSIER</h1>
+        <div class="subtitle">SISTEMA DE GESTÃO DE ALVOS E PONTOS DE INTERESSE</div>
+      </div>
+      <div class="intel-stats">
+        <span><span class="num">${state.locations.length}</span> REGISTOS</span>
+        <span><span class="num">${filtered.length}</span> FILTRADOS</span>
+        <span><span class="num">${state.remoteLocations.length}</span> REMOTOS</span>
       </div>
     </div>
-    <div class="panel">
-      <div class="panel-head"><h2>[LISTA_DE_LOCAIS (${filtered.length})]</h2></div>
-      <div class="panel-body" style="padding:0 15px;">
-        ${filtered.length===0 ? `<p class="muted" style="padding:15px 0;">Nenhum local encontrado.</p>` : listHtml}
+
+    <div class="search-intel">
+      <span class="prompt">&gt;</span>
+      <input id="searchInput" type="text" value="${state.searchQuery}" placeholder="PESQUISAR POR NOME, REGIÃO, COORDENADAS OU DESCRIÇÃO">
+      <span class="result-count">${filtered.length} resultados</span>
+      <div class="search-actions">
+        <button id="toggleAddBtn" class="btn btn-add">➕ ADICIONAR</button>
+        <button id="exportXmlBtn" class="btn btn-outline">⬇ XML</button>
+        <button id="refreshXmlBtn" class="btn btn-outline">⟳ XML</button>
       </div>
+    </div>
+
+    ${addFormHtml}
+
+    <div style="margin-top:10px;">
+      ${filtered.length === 0 ? '<p class="muted" style="padding:20px 0;">Nenhum local encontrado.</p>' : cardsHtml}
     </div>
   `;
 }
@@ -1187,11 +1399,6 @@ function bindEvents(){
     loadRemoteLocations();
   });
 
-  // Expandir locais
-  document.querySelectorAll('.loc-expand').forEach(b => {
-    b.onclick = () => { toggleExpand(b.dataset.id); };
-  });
-
   if (state.tab==='encrypt'){
     document.getElementById('mode-manual')?.addEventListener('click', () => { playClick(); setState({enc:{...state.enc, mode:'manual'}}); });
     document.getElementById('mode-preset')?.addEventListener('click', () => { playClick(); setState({enc:{...state.enc, mode:'preset'}}); });
@@ -1235,8 +1442,9 @@ function bindEvents(){
     document.getElementById('loc-description')?.addEventListener('input', e => state.locForm.description = e.target.value);
     document.getElementById('loc-add')?.addEventListener('click', onAddLocation);
 
-    // Edição
-    document.querySelectorAll('.loc-edit').forEach(b => b.onclick = () => {
+    // Edição (já tratada via onclick nos botões, mas precisamos dos eventos)
+    document.querySelectorAll('.loc-edit').forEach(b => b.onclick = (e) => {
+      e.stopPropagation();
       const l = state.locations.find(x=>x.id===b.dataset.id);
       if (!l) return;
       let timeVal = '';
@@ -1254,7 +1462,8 @@ function bindEvents(){
         }
       });
     });
-    document.querySelectorAll('.loc-del').forEach(b => b.onclick = () => {
+    document.querySelectorAll('.loc-del').forEach(b => b.onclick = (e) => {
+      e.stopPropagation();
       const loc = state.locations.find(x=>x.id===b.dataset.id);
       if (loc && loc._remote) {
         addLog('Não é possível remover locais remotos', 'warn');
@@ -1298,6 +1507,7 @@ function bindEvents(){
       addLog(`Local actualizado: ${state.editDraft.name}`, 'info');
     });
     document.querySelector('.edit-cancel')?.addEventListener('click', () => setState({editingId:null}));
+    // Inputs de edição (delegar)
     document.querySelectorAll('.edit-name').forEach(el => el.oninput = e => state.editDraft.name = e.target.value);
     document.querySelectorAll('.edit-x').forEach(el => el.oninput = e => state.editDraft.x = e.target.value);
     document.querySelectorAll('.edit-y').forEach(el => el.oninput = e => state.editDraft.y = e.target.value);
