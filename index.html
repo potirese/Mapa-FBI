@@ -240,7 +240,7 @@
 //  CONFIGURAÇÃO
 // ==========================================
 const CONFIG = {
-  LOCATIONS_XML_URL: 'locations.xml',
+  LOCATIONS_XML_URL: 'locais.xml',
   ENCRYPTION_KEY: 'SYS_SECURE_XML',
 };
 
@@ -670,7 +670,7 @@ function exportLocationsXML() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'locations.xml';
+  a.download = 'locais.xml';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
